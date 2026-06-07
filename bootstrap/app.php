@@ -5,12 +5,18 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleOfficeInertiaRequests;
 use App\Http\Middleware\SetTeamUrlDefaults;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,11 +32,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->domain($apiDomain)
                 ->group(base_path('routes/api.php'));
 
-            // Versioned API routes (v1)
+            // Versioned API routes (v1) - Legacy
             Route::middleware('api')
                 ->domain($apiDomain)
                 ->prefix('v1')
                 ->group(base_path('routes/api/v1.php'));
+
+            // Client API routes (client/v1) - Enterprise Standard
+            Route::middleware('api')
+                ->domain($apiDomain)
+                ->prefix('client/v1')
+                ->group(base_path('routes/api/client/v1.php'));
 
             // Office dashboard routes
             Route::middleware('office')
@@ -49,12 +61,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->group('office', [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            ValidateCsrfToken::class,
+            SubstituteBindings::class,
             HandleAppearance::class,
             HandleOfficeInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

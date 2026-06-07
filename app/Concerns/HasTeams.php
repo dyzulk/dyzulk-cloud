@@ -151,6 +151,7 @@ trait HasTeams
 
         return new UserTeam(
             id: $team->id,
+            uuid: $team->uuid,
             name: $team->name,
             slug: $team->slug,
             isPersonal: $team->is_personal,
