@@ -1,11 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { Check, Copy } from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { dashboard } from '@/routes';
@@ -89,14 +84,14 @@ export default function Dashboard() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm">
-                                API
+                                Identifiers
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {currentTeam ? (
                                 <CopyableField
-                                    id="account-id"
-                                    label="Account ID"
+                                    id="team-id"
+                                    label="Team ID"
                                     value={currentTeam.uuid}
                                 />
                             ) : null}
