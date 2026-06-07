@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CertificateApiController;
+use App\Http\Resources\Api\V1\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return response()->json([
         'message' => 'API v1 is working',
-        'user' => $request->user() ?? null,
+        'user' => $request->user() ? new UserResource($request->user()) : null,
     ]);
 })->middleware('auth:sanctum');
 

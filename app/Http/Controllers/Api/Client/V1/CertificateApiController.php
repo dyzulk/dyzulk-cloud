@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Client\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\Client\V1\CertificateResource;
 use App\Models\CaCertificate;
 use App\Models\Certificate;
 use App\Models\Team;
@@ -41,6 +42,7 @@ class CertificateApiController extends Controller
         }
 
         $certificates = $query->latest()->paginate($perPage);
+        $certificates->getCollection()->transform(fn ($cert) => new CertificateResource($cert));
 
         return response()->json([
             'success' => true,
@@ -69,6 +71,7 @@ class CertificateApiController extends Controller
         }
 
         $certificates = $query->latest()->paginate($perPage);
+        $certificates->getCollection()->transform(fn ($cert) => new CertificateResource($cert));
 
         return response()->json([
             'success' => true,
@@ -149,7 +152,7 @@ class CertificateApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Certificate generated successfully',
-            'data' => $certificate,
+            'data' => new CertificateResource($certificate),
         ], 201);
     }
 

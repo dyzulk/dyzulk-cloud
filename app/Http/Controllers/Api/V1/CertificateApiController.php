@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\CertificateResource;
 use App\Models\CaCertificate;
 use App\Models\Certificate;
 use App\Services\Ssl\LeafGeneratorService;
@@ -36,6 +37,7 @@ class CertificateApiController extends Controller
         }
 
         $certificates = $query->latest()->paginate($perPage);
+        $certificates->getCollection()->transform(fn ($cert) => new CertificateResource($cert));
 
         return response()->json([
             'status' => 'success',
@@ -94,7 +96,7 @@ class CertificateApiController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Certificate generated successfully',
-            'data' => $certificate,
+            'data' => new CertificateResource($certificate),
         ], 201);
     }
 
@@ -107,7 +109,7 @@ class CertificateApiController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $certificate,
+            'data' => new CertificateResource($certificate),
         ]);
     }
 
