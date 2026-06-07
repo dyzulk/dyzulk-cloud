@@ -1,15 +1,18 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
-import Heading from '@/components/heading';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardFooter,
-} from '@/components/ui/card';
+    Download,
+    Trash2,
+    ArrowLeft,
+    Key,
+    FileCheck,
+    FileCode,
+} from 'lucide-react';
+import {
+    index,
+    downloadFile,
+    destroy,
+} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
+import Heading from '@/components/heading';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,20 +25,17 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
-    index,
-    downloadFile,
-    destroy,
-} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
-import {
-    Download,
-    Trash2,
-    ArrowLeft,
-    Key,
-    FileCheck,
-    FileCode,
-} from 'lucide-react';
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    CardFooter,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import AppLayout from '@/layouts/app-layout';
 import type { Certificate } from '@/types';
 
 export default function CertificateShow({

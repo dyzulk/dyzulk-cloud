@@ -1,5 +1,10 @@
 import { Head, router } from '@inertiajs/react';
+import { formatDistanceToNow } from 'date-fns';
 import { Plus, Key, Trash2 } from 'lucide-react';
+import ApiTokenController from '@/actions/App/Http/Controllers/Settings/ApiTokenController';
+import Heading from '@/components/heading';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -9,13 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
 import { index as apiTokens } from '@/routes/api-tokens';
 import { CreateTokenModal } from './create-token-modal';
-import Heading from '@/components/heading';
-import ApiTokenController from '@/actions/App/Http/Controllers/Settings/ApiTokenController';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface Token {
     id: number;
@@ -134,6 +134,7 @@ export default function ApiTokensIndex({
                                                                     s.value ===
                                                                     ability,
                                                             )?.label || ability;
+
                                                         return (
                                                             <Badge
                                                                 key={ability}

@@ -18,7 +18,9 @@ export function useCaFormDefaults<T extends MinimumFormData>(
     caStatus: CaStatus,
 ) {
     useEffect(() => {
-        if (!isDialogOpen) return;
+        if (!isDialogOpen) {
+return;
+}
 
         let newAlgorithm = data.algorithm;
         let newKeyBits = data.key_bits;
@@ -42,27 +44,33 @@ export function useCaFormDefaults<T extends MinimumFormData>(
                 newKeyBits === '2048' &&
                 !caStatus.intermediate_2048 &&
                 caStatus.intermediate_4096
-            )
-                newKeyBits = '4096';
+            ) {
+newKeyBits = '4096';
+}
+
             if (
                 newKeyBits === '4096' &&
                 !caStatus.intermediate_4096 &&
                 caStatus.intermediate_2048
-            )
-                newKeyBits = '2048';
+            ) {
+newKeyBits = '2048';
+}
         } else {
             if (
                 newCurveName === 'prime256v1' &&
                 !caStatus.intermediate_ecc_256 &&
                 caStatus.intermediate_ecc_384
-            )
-                newCurveName = 'secp384r1';
+            ) {
+newCurveName = 'secp384r1';
+}
+
             if (
                 newCurveName === 'secp384r1' &&
                 !caStatus.intermediate_ecc_384 &&
                 caStatus.intermediate_ecc_256
-            )
-                newCurveName = 'prime256v1';
+            ) {
+newCurveName = 'prime256v1';
+}
         }
 
         // Only update state if changes are required to prevent infinite loops
@@ -78,5 +86,5 @@ export function useCaFormDefaults<T extends MinimumFormData>(
                 curve_name: newCurveName,
             }));
         }
-    }, [isDialogOpen, data.algorithm, caStatus]);
+    }, [isDialogOpen, data.algorithm, data.curve_name, data.key_bits, caStatus, setData]);
 }

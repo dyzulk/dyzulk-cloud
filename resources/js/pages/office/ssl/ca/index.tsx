@@ -1,22 +1,4 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import Heading from '@/components/heading';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     CheckCircle2,
     Key,
@@ -25,14 +7,24 @@ import {
     ShieldCheck,
     XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
     index,
     renew,
     renewAll,
     setupCa,
 } from '@/actions/App/Http/Controllers/Ssl/SslCaController';
-import type { CaCertificate, CaStatus } from '@/types';
-import { useState } from 'react';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -47,8 +39,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { getRelativeUrl } from '@/lib/utils';
+import type { CaCertificate, CaStatus } from '@/types';
 
 type CaTypeKey =
     | 'root'
@@ -57,6 +57,37 @@ type CaTypeKey =
     | 'intermediate_4096'
     | 'intermediate_ecc_256'
     | 'intermediate_ecc_384';
+
+const caTypeLabels: Record<CaTypeKey, string> = {
+    root: 'Root RSA',
+    root_ecc: 'Root ECC',
+    intermediate_2048: 'Intermediate RSA 2048',
+    intermediate_4096: 'Intermediate RSA 4096',
+    intermediate_ecc_256: 'Intermediate ECC 256',
+    intermediate_ecc_384: 'Intermediate ECC 384',
+};
+
+const StatusItem = ({
+    type,
+    isReady,
+    onClick,
+}: {
+    type: CaTypeKey;
+    isReady: boolean;
+    onClick: (type: CaTypeKey) => void;
+}) => (
+    <div
+        onClick={() => onClick(type)}
+        className="flex cursor-pointer items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
+    >
+        <span className="text-sm font-medium">{caTypeLabels[type]}</span>
+        {isReady ? (
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+        ) : (
+            <XCircle className="h-5 w-5 text-red-500" />
+        )}
+    </div>
+);
 
 export default function CaIndex({
     caCertificates,
@@ -81,14 +112,7 @@ export default function CaIndex({
     // Renew Single Form
     const renewSingleForm = useForm({});
 
-    const caTypeLabels: Record<CaTypeKey, string> = {
-        root: 'Root RSA',
-        root_ecc: 'Root ECC',
-        intermediate_2048: 'Intermediate RSA 2048',
-        intermediate_4096: 'Intermediate RSA 4096',
-        intermediate_ecc_256: 'Intermediate ECC 256',
-        intermediate_ecc_384: 'Intermediate ECC 384',
-    };
+
 
     const handleStatusClick = (caType: CaTypeKey) => {
         setSelectedCaType(caType);
@@ -97,14 +121,18 @@ export default function CaIndex({
     };
 
     const isMissingRootForIntermediate = (type: CaTypeKey) => {
-        if (type.startsWith('intermediate_ecc_') && !caStatus.root_ecc)
+        if (type.startsWith('intermediate_ecc_') && !caStatus.root_ecc) {
             return true;
+        }
+
         if (
             type.startsWith('intermediate_') &&
             !type.includes('_ecc_') &&
             !caStatus.root
-        )
+        ) {
             return true;
+        }
+
         return false;
     };
 
@@ -139,25 +167,7 @@ export default function CaIndex({
         });
     };
 
-    const StatusItem = ({
-        type,
-        isReady,
-    }: {
-        type: CaTypeKey;
-        isReady: boolean;
-    }) => (
-        <div
-            onClick={() => handleStatusClick(type)}
-            className="flex cursor-pointer items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
-        >
-            <span className="text-sm font-medium">{caTypeLabels[type]}</span>
-            {isReady ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-            ) : (
-                <XCircle className="h-5 w-5 text-red-500" />
-            )}
-        </div>
-    );
+
 
     return (
         <>
@@ -202,26 +212,32 @@ export default function CaIndex({
                                 <StatusItem
                                     type="root"
                                     isReady={caStatus.root}
+                                    onClick={handleStatusClick}
                                 />
                                 <StatusItem
                                     type="root_ecc"
                                     isReady={caStatus.root_ecc}
+                                    onClick={handleStatusClick}
                                 />
                                 <StatusItem
                                     type="intermediate_2048"
                                     isReady={caStatus.intermediate_2048}
+                                    onClick={handleStatusClick}
                                 />
                                 <StatusItem
                                     type="intermediate_4096"
                                     isReady={caStatus.intermediate_4096}
+                                    onClick={handleStatusClick}
                                 />
                                 <StatusItem
                                     type="intermediate_ecc_256"
                                     isReady={caStatus.intermediate_ecc_256}
+                                    onClick={handleStatusClick}
                                 />
                                 <StatusItem
                                     type="intermediate_ecc_384"
                                     isReady={caStatus.intermediate_ecc_384}
+                                    onClick={handleStatusClick}
                                 />
                             </CardContent>
                         </Card>

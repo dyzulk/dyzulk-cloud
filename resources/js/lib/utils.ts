@@ -13,7 +13,8 @@ export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
 
 export const getRelativeUrl = (url: string) => {
     if (url.startsWith('//')) {
-        return url.replace(/^\/\/[^\/]+/, '') || '/';
+        return url.replace(new RegExp('^//[^/]+'), '') || '/';
     }
+
     return url;
 };

@@ -1,7 +1,16 @@
-import { useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { AlertTriangle, Search } from 'lucide-react';
+import { useState } from 'react';
+import {
+    index,
+    show,
+    store,
+} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -9,15 +18,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     Dialog,
     DialogContent,
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
     Select,
     SelectContent,
@@ -35,17 +36,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import InputError from '@/components/input-error';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-    index,
-    show,
-    store,
-} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
-import { AlertTriangle, CheckCircle2, Search } from 'lucide-react';
-import type { CaStatus, Certificate, PaginatedData } from '@/types';
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useCaFormDefaults } from '@/hooks/use-ca-form-defaults';
+import type { CaStatus, Certificate, PaginatedData } from '@/types';
 
 export default function CertificatesIndex({
     certificates,
@@ -96,6 +96,7 @@ export default function CertificatesIndex({
 
     const handleOpenChange = (open: boolean) => {
         setIsDialogOpen(open);
+
         if (!open) {
             reset();
             clearErrors();

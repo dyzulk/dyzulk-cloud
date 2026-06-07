@@ -10,8 +10,6 @@ import {
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
 import { OfficeNavEmployee } from '@/components/office/office-nav-employee';
-import { dashboard as officeDashboard } from '@/routes/office';
-import { index as officeSslCaIndex } from '@/routes/office/ssl/ca';
 import {
     Sidebar,
     SidebarContent,
@@ -21,9 +19,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { Employee } from '@/types/office';
-import type { NavItem } from '@/types';
 import { getRelativeUrl } from '@/lib/utils';
+import { dashboard as officeDashboard } from '@/routes/office';
+import { index as officeSslCaIndex } from '@/routes/office/ssl/ca';
+import type { NavItem } from '@/types';
+import type { Employee } from '@/types/office';
 
 export function OfficeSidebar() {
     const page = usePage<{ auth: { employee: Employee } }>();
