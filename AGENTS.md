@@ -97,7 +97,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
 - Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
+    - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
 
 === php rules ===
 
@@ -107,6 +107,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Use PHP 8 constructor property promotion: `public function __construct(public GitHub $github) { }`. Do not leave empty zero-parameter `__construct()` methods unless the constructor is private.
 - Use explicit return type declarations and type hints for all method parameters: `function isAccessible(User $user, ?string $path = null): bool`
 - Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
+- Follow existing application Enum naming conventions.
 - Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
 - Use array shape type definitions in PHPDoc blocks.
 
@@ -203,11 +204,5 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 # Inertia + React
 
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
-
-=== shadcn/ui rules ===
-
-# Shadcn UI
-
-- Components like `Tooltip` rely on a React Context (`TooltipProvider`). It is highly recommended to wrap the main application layout (for example in `resources/js/app.tsx` or other root layouts) with `<TooltipProvider>` so that all tooltip components across different pages can function properly without needing to be wrapped individually.
 
 </laravel-boost-guidelines>
