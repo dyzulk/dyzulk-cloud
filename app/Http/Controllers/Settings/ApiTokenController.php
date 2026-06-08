@@ -48,7 +48,10 @@ class ApiTokenController extends Controller
             $request->scopes ?? []
         );
 
-        return back()->with('newToken', $token->plainTextToken);
+        // Strip the ID| prefix to hide the database ID from the user (Standard GitHub/Cloudflare style)
+        $cleanToken = explode('|', $token->plainTextToken, 2)[1];
+
+        return back()->with('newToken', $cleanToken);
     }
 
     /**

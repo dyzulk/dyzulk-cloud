@@ -13,7 +13,7 @@ test('download returns the certificate file', function () {
     $team->members()->attach($user, ['role' => 'owner']);
 
     $certificate = Certificate::factory()->create(['team_id' => $team->id]);
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->get(route('api.client.v1.certificates.download', [$certificate, 'cert']));
@@ -30,7 +30,21 @@ test('download returns 403 for a certificate from another team', function () {
     $otherTeam = Team::factory()->create();
     $certificate = Certificate::factory()->create(['team_id' => $otherTeam->id]);
 
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer {$token}")
+        ->get(route('api.client.v1.certificates.download', [$certificate, 'cert']));
+
+    $response->assertForbidden();
+});
+
+test('download rejects token without ssl:read scope', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => 'owner']);
+
+    $certificate = Certificate::factory()->create(['team_id' => $team->id]);
+    $token = $user->createToken('test', ['server:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->get(route('api.client.v1.certificates.download', [$certificate, 'cert']));

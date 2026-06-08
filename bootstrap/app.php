@@ -5,6 +5,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleOfficeInertiaRequests;
 use App\Http\Middleware\SetTeamUrlDefaults;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -17,11 +18,15 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Sanctum\Exceptions\MissingAbilityException;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function () {
             $apiDomain = config('app.api.domain');
@@ -31,12 +36,6 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('api')
                 ->domain($apiDomain)
                 ->group(base_path('routes/api.php'));
-
-            // Versioned API routes (v1) - Legacy
-            Route::middleware('api')
-                ->domain($apiDomain)
-                ->prefix('v1')
-                ->group(base_path('routes/api/v1.php'));
 
             // Client API routes (client/v1) - Enterprise Standard
             Route::middleware('api')
@@ -74,10 +73,32 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'office.access' => EnsureOfficeAccess::class,
+            'abilities' => CheckAbilities::class,
+            'ability' => CheckForAnyAbility::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->getHost() === config('app.api.domain'),
+            fn(Request $request) => $request->getHost() === config('app.api.domain'),
         );
+
+        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
+            if ($e->getPrevious() instanceof MissingAbilityException) {
+                if ($request->expectsJson() || $request->getHost() === config('app.api.domain')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Forbidden.',
+                    ], 403);
+                }
+            }
+        });
+
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->expectsJson() || $request->getHost() === config('app.api.domain')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+        });
     })->create();

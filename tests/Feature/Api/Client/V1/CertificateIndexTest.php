@@ -14,7 +14,7 @@ test('index returns certificates for a specific team via UUID', function () {
 
     Certificate::factory()->count(3)->create(['team_id' => $team->id]);
 
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson(route('api.client.v1.teams.certificates.index', $team));
@@ -29,7 +29,7 @@ test('index returns 403 for a team the user does not belong to', function () {
     $user = User::factory()->create();
     $otherTeam = Team::factory()->create();
 
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson(route('api.client.v1.teams.certificates.index', $otherTeam));
@@ -39,10 +39,23 @@ test('index returns 403 for a team the user does not belong to', function () {
 
 test('index returns 404 for an invalid UUID', function () {
     $user = User::factory()->create();
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson('http://'.config('app.api.domain').'/client/v1/teams/00000000-0000-0000-0000-000000000000/certificates');
 
     $response->assertNotFound();
+});
+
+test('index rejects token without ssl:read scope', function () {
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($user, ['role' => 'owner']);
+
+    $token = $user->createToken('test', ['server:read'])->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson(route('api.client.v1.teams.certificates.index', $team));
+
+    $response->assertForbidden();
 });

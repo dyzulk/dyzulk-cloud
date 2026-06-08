@@ -20,7 +20,7 @@ test('indexGlobal returns certificates from all teams the user belongs to', func
     Certificate::factory()->count(3)->create(['team_id' => $teamB->id]);
     Certificate::factory()->count(1)->create(['team_id' => $teamC->id]);
 
-    $token = $user->createToken('test')->plainTextToken;
+    $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson(route('api.client.v1.certificates.index_global'));
@@ -36,4 +36,24 @@ test('indexGlobal requires authentication', function () {
     $response = $this->getJson(route('api.client.v1.certificates.index_global'));
 
     $response->assertUnauthorized();
+});
+
+test('indexGlobal rejects token without ssl:read scope', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('test', ['server:read'])->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson(route('api.client.v1.certificates.index_global'));
+
+    $response->assertForbidden();
+});
+
+test('indexGlobal accepts token with wildcard scope', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('test', ['*'])->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson(route('api.client.v1.certificates.index_global'));
+
+    $response->assertOk();
 });

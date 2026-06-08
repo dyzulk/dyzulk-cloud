@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { formatDistanceToNow } from 'date-fns';
-import { Plus, Key, Trash2 } from 'lucide-react';
+import { Plus, Key, Trash2, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 import ApiTokenController from '@/actions/App/Http/Controllers/Settings/ApiTokenController';
 import Heading from '@/components/heading';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -42,11 +43,21 @@ export default function ApiTokensIndex({
     availableScopes,
     newToken,
 }: Props) {
+    const [copied, setCopied] = useState(false);
+
     const revokeToken = (id: number) => {
         if (confirm('Are you sure you want to revoke this token?')) {
             router.delete(ApiTokenController.destroy.url({ id }), {
                 preserveScroll: true,
             });
+        }
+    };
+
+    const copyToClipboard = () => {
+        if (newToken) {
+            navigator.clipboard.writeText(newToken);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
         }
     };
 
@@ -73,9 +84,24 @@ export default function ApiTokensIndex({
                                 Please copy your new API token. For your
                                 security, it won't be shown again.
                             </p>
-                            <code className="block rounded bg-green-100 p-2 font-mono text-sm break-all dark:bg-green-950">
-                                {newToken}
-                            </code>
+                            <div className="flex items-center gap-2">
+                                <code className="block flex-1 rounded bg-green-100 p-2 font-mono text-sm break-all dark:bg-green-950">
+                                    {newToken}
+                                </code>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0 border-green-300 bg-green-100 hover:bg-green-200 hover:text-green-900 dark:border-green-700 dark:bg-green-900/50 dark:hover:bg-green-800"
+                                    onClick={copyToClipboard}
+                                >
+                                    {copied ? (
+                                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
                         </AlertDescription>
                     </Alert>
                 )}

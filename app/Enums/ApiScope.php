@@ -10,6 +10,10 @@ enum ApiScope: string
     case DnsWrite = 'dns:write';
     case SslRead = 'ssl:read';
     case SslWrite = 'ssl:write';
+    case TeamRead = 'team:read';
+    case TeamWrite = 'team:write';
+    case BillingRead = 'billing:read';
+    case BillingWrite = 'billing:write';
 
     public function label(): string
     {
@@ -20,6 +24,10 @@ enum ApiScope: string
             self::DnsWrite => 'Write DNS',
             self::SslRead => 'Read SSL Certificates',
             self::SslWrite => 'Write SSL Certificates',
+            self::TeamRead => 'Read Teams',
+            self::TeamWrite => 'Write Teams',
+            self::BillingRead => 'Read Billing',
+            self::BillingWrite => 'Write Billing',
         };
     }
 
@@ -32,6 +40,10 @@ enum ApiScope: string
             self::DnsWrite => 'Allow creating, updating, and deleting DNS records.',
             self::SslRead => 'Allow reading SSL certificates.',
             self::SslWrite => 'Allow creating and deleting SSL certificates.',
+            self::TeamRead => 'Allow reading team details and members.',
+            self::TeamWrite => 'Allow creating, updating, and deleting teams and memberships.',
+            self::BillingRead => 'Allow reading billing details and invoices.',
+            self::BillingWrite => 'Allow creating, updating, and deleting billing information.',
         };
     }
 }
