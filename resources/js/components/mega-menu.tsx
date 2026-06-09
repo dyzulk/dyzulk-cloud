@@ -68,7 +68,6 @@ export function MegaMenu() {
     const [prevIndex, setPrevIndex] = useState<number | null>(null);
     
     const pillRef = useRef<HTMLDivElement>(null);
-    const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     // GSAP Hover Pill Animation
     useEffect(() => {
@@ -97,16 +96,13 @@ export function MegaMenu() {
     useEffect(() => {
         if (activeIndex !== null && prevIndex !== null && activeIndex !== prevIndex) {
             const isRight = activeIndex > prevIndex;
-            const currentContent = contentRefs.current[activeIndex];
             
-            if (currentContent) {
-                // To prevent Radix CSS animations from conflicting, we override with GSAP
-                gsap.fromTo(
-                    currentContent,
-                    { x: isRight ? 20 : -20, opacity: 0 },
-                    { x: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
-                );
-            }
+            // To prevent Radix CSS animations from conflicting, we override with GSAP
+            gsap.fromTo(
+                "[data-slot='navigation-menu-viewport']",
+                { x: isRight ? 20 : -20 },
+                { x: 0, duration: 0.3, ease: 'power2.out' }
+            );
         }
     }, [activeIndex, prevIndex]);
 
@@ -139,7 +135,6 @@ export function MegaMenu() {
                             {item.title}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent 
-                            ref={(el) => { contentRefs.current[index] = el; }}
                             // We disable the default Radix slide-in classes using tailwind arbitrary variants 
                             // so GSAP can fully control the entry animation
                             className="data-[motion^=from-]:animate-none data-[motion^=to-]:animate-none"
