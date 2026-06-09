@@ -1,5 +1,5 @@
-import gsap from 'gsap';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { gsap, useGSAP } from '@/lib/gsap';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -70,7 +70,7 @@ export function MegaMenu() {
     const pillRef = useRef<HTMLDivElement>(null);
 
     // GSAP Hover Pill Animation
-    useEffect(() => {
+    useGSAP(() => {
         if (!pillRef.current) {
             return;
         }
@@ -93,7 +93,7 @@ export function MegaMenu() {
     }, [hoveredNode]);
 
     // GSAP Directional Content Sliding
-    useEffect(() => {
+    useGSAP(() => {
         if (activeIndex !== null && prevIndex !== null && activeIndex !== prevIndex) {
             const isRight = activeIndex > prevIndex;
             
