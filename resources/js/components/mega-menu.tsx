@@ -67,6 +67,7 @@ export function MegaMenu() {
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [prevIndex, setPrevIndex] = useState<number | null>(null);
     
+    const listRef = useRef<HTMLUListElement>(null);
     const pillRef = useRef<HTMLDivElement>(null);
 
     // GSAP Hover Pill Animation
@@ -75,8 +76,12 @@ export function MegaMenu() {
             return;
         }
         
-        if (hoveredNode) {
-            const { offsetLeft, offsetWidth } = hoveredNode;
+        if (hoveredNode && listRef.current) {
+            const listRect = listRef.current.getBoundingClientRect();
+            const triggerRect = hoveredNode.getBoundingClientRect();
+            const offsetLeft = triggerRect.left - listRect.left;
+            const offsetWidth = triggerRect.width;
+            
             gsap.to(pillRef.current, {
                 x: offsetLeft,
                 width: offsetWidth,
@@ -115,7 +120,7 @@ export function MegaMenu() {
             }}
             className="hidden lg:flex"
         >
-            <NavigationMenuList className="relative p-1">
+            <NavigationMenuList ref={listRef} className="relative p-1">
                 {/* The Animated Hover Pill */}
                 <div
                     ref={pillRef}
