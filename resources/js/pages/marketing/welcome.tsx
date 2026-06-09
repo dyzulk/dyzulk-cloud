@@ -1,6 +1,8 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { dashboard, login } from '@/routes';
 import { register } from '@/routes';
+import ApplicationLogo from '@/components/ApplicationLogo';
+import { MegaMenu } from '@/components/MegaMenu';
 
 export default function Welcome() {
     const { auth, currentTeam } = usePage().props;
@@ -10,8 +12,15 @@ export default function Welcome() {
         <>
             <Head title="Welcome" />
             <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
-                <header className="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
-                    <nav className="flex items-center justify-end gap-4">
+                <header className="mb-12 w-full max-w-[335px] text-sm lg:max-w-4xl flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                        <Link href="/" className="flex items-center">
+                            <ApplicationLogo className="h-6 w-auto text-[#1b1b18] dark:text-[#EDEDEC]" />
+                        </Link>
+                        <MegaMenu />
+                    </div>
+
+                    <nav className="flex items-center gap-4">
                         {auth.user ? (
                             <Link
                                 href={dashboardUrl}
