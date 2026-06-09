@@ -1,11 +1,11 @@
 <?php
 
+use App\Exceptions\ApiExceptionHandler;
 use App\Http\Middleware\EnsureOfficeAccess;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleOfficeInertiaRequests;
 use App\Http\Middleware\SetTeamUrlDefaults;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -18,10 +18,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Laravel\Sanctum\Exceptions\MissingAbilityException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -82,23 +80,9 @@ return Application::configure(basePath: dirname(__DIR__))
             fn(Request $request) => $request->getHost() === config('app.api.domain'),
         );
 
-        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
-            if ($e->getPrevious() instanceof MissingAbilityException) {
-                if ($request->expectsJson() || $request->getHost() === config('app.api.domain')) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Forbidden.',
-                    ], 403);
-                }
-            }
-        });
-
-        $exceptions->render(function (AuthenticationException $e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->expectsJson() || $request->getHost() === config('app.api.domain')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated.',
-                ], 401);
+                return app(ApiExceptionHandler::class)->handle($e, $request);
             }
         });
     })->create();

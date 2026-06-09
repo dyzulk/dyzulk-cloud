@@ -23,6 +23,7 @@ interface Token {
     name: string;
     abilities: string[];
     last_used_at: string | null;
+    expires_at: string | null;
     created_at: string;
 }
 
@@ -122,6 +123,7 @@ export default function ApiTokensIndex({
                                 <TableHead>Name</TableHead>
                                 <TableHead>Permissions</TableHead>
                                 <TableHead>Last Used</TableHead>
+                                <TableHead>Expires</TableHead>
                                 <TableHead className="text-right">
                                     Actions
                                 </TableHead>
@@ -131,7 +133,7 @@ export default function ApiTokensIndex({
                             {tokens.length === 0 ? (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={4}
+                                        colSpan={5}
                                         className="py-8 text-center text-muted-foreground"
                                     >
                                         No API tokens created yet.
@@ -185,6 +187,21 @@ export default function ApiTokensIndex({
                                                       { addSuffix: true },
                                                   )
                                                 : 'Never'}
+                                        </TableCell>
+                                        <TableCell className="text-sm">
+                                            {token.expires_at ? (
+                                                new Date(token.expires_at) < new Date() ? (
+                                                    <Badge variant="destructive" className="text-xs font-normal">
+                                                        Expired
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-muted-foreground">
+                                                        {formatDistanceToNow(new Date(token.expires_at), { addSuffix: true })}
+                                                    </span>
+                                                )
+                                            ) : (
+                                                <span className="text-muted-foreground">Never</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button

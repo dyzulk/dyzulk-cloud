@@ -16,7 +16,7 @@ class ApiTokenController extends Controller
     public function index(Request $request): Response
     {
         $tokens = $request->user()->tokens()->orderBy('created_at', 'desc')->get();
-        
+
         $availableScopes = array_map(function ($scope) {
             return [
                 'value' => $scope->value,
@@ -41,11 +41,17 @@ class ApiTokenController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'scopes' => ['array'],
             'scopes.*' => ['string'],
+            'expires_in' => ['nullable', 'integer', 'min:1'],
         ]);
 
+        $expiresAt = $request->filled('expires_in')
+            ? now()->addDays($request->expires_in)
+            : null;
+
         $token = $request->user()->createToken(
-            $request->name, 
-            $request->scopes ?? []
+            $request->name,
+            $request->scopes ?? [],
+            $expiresAt
         );
 
         // Strip the ID| prefix to hide the database ID from the user (Standard GitHub/Cloudflare style)
