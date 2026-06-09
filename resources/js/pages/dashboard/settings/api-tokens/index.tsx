@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { formatDistanceToNow } from 'date-fns';
 import { Plus, Key, Trash2, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
-import ApiTokenController from '@/actions/App/Http/Controllers/Settings/ApiTokenController';
+import ApiTokenController from '@/actions/App/Http/Controllers/Dashboard/Settings/ApiTokenController';
 import Heading from '@/components/heading';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';

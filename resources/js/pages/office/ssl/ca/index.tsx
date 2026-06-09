@@ -14,7 +14,7 @@ import {
     renew,
     renewAll,
     setupCa,
-} from '@/actions/App/Http/Controllers/Ssl/SslCaController';
+} from '@/actions/App/Http/Controllers/Office/SslCaController';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

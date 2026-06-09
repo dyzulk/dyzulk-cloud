@@ -1,8 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { dashboard, login } from '@/routes';
-import { register } from '@/routes';
-import ApplicationLogo from '@/components/ApplicationLogo';
-import { MegaMenu } from '@/components/MegaMenu';
+import ApplicationLogo from '@/components/application-logo';
+import { MegaMenu } from '@/components/mega-menu';
+import { dashboard, login, register } from '@/routes';
 
 export default function Welcome() {
     const { auth, currentTeam } = usePage().props;

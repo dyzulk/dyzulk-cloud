@@ -5,7 +5,7 @@ import {
     index,
     show,
     store,
-} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
+} from '@/actions/App/Http/Controllers/Dashboard/Ssl/SslCertificateController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Alert, AlertDescription } from '@/components/ui/alert';

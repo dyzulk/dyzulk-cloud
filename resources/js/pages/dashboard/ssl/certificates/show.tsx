@@ -11,7 +11,7 @@ import {
     index,
     downloadFile,
     destroy,
-} from '@/actions/App/Http/Controllers/Ssl/SslCertificateController';
+} from '@/actions/App/Http/Controllers/Dashboard/Ssl/SslCertificateController';
 import Heading from '@/components/heading';
 import {
     AlertDialog,

@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
-import ApiTokenController from '@/actions/App/Http/Controllers/Settings/ApiTokenController';
+import ApiTokenController from '@/actions/App/Http/Controllers/Dashboard/Settings/ApiTokenController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

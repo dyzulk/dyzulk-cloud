@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -6,7 +7,6 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import gsap from 'gsap';
 
 const items = [
     {
@@ -72,7 +72,9 @@ export function MegaMenu() {
 
     // GSAP Hover Pill Animation
     useEffect(() => {
-        if (!pillRef.current) return;
+        if (!pillRef.current) {
+            return;
+        }
         
         if (hoveredNode) {
             const { offsetLeft, offsetWidth } = hoveredNode;
@@ -137,7 +139,7 @@ export function MegaMenu() {
                             {item.title}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent 
-                            ref={(el) => (contentRefs.current[index] = el)}
+                            ref={(el) => { contentRefs.current[index] = el; }}
                             // We disable the default Radix slide-in classes using tailwind arbitrary variants 
                             // so GSAP can fully control the entry animation
                             className="data-[motion^=from-]:animate-none data-[motion^=to-]:animate-none"
