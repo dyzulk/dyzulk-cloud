@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Office\Auth\LoginController;
 use App\Http\Controllers\Office\DashboardController;
+use App\Http\Controllers\Office\SslCaController;
 use App\Http\Middleware\EnsureOfficeAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -33,9 +34,9 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class])->group(function ()
 });
 
 // Office CA Admin (Administrators only)
-Route::middleware(['auth:office', EnsureOfficeAccess::class . ':,administrator'])->name('office.')->group(function () {
-    Route::get('ssl/ca', [\App\Http\Controllers\Ssl\SslCaController::class, 'index'])->name('ssl.ca.index');
-    Route::post('ssl/ca/setup', [\App\Http\Controllers\Ssl\SslCaController::class, 'setupCa'])->name('ssl.ca.setup');
-    Route::post('ssl/ca/{certificate}/renew', [\App\Http\Controllers\Ssl\SslCaController::class, 'renew'])->name('ssl.ca.renew');
-    Route::post('ssl/ca/renew-all', [\App\Http\Controllers\Ssl\SslCaController::class, 'renewAll'])->name('ssl.ca.renew-all');
+Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])->name('office.')->group(function () {
+    Route::get('ssl/ca', [SslCaController::class, 'index'])->name('ssl.ca.index');
+    Route::post('ssl/ca/setup', [SslCaController::class, 'setupCa'])->name('ssl.ca.setup');
+    Route::post('ssl/ca/{certificate}/renew', [SslCaController::class, 'renew'])->name('ssl.ca.renew');
+    Route::post('ssl/ca/renew-all', [SslCaController::class, 'renewAll'])->name('ssl.ca.renew-all');
 });

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Teams;
+namespace App\Http\Controllers\Dashboard\Teams;
 
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;

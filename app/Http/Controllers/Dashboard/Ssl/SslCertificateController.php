@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ssl;
+namespace App\Http\Controllers\Dashboard\Ssl;
 
 use App\Http\Controllers\Controller;
 use App\Models\CaCertificate;
@@ -39,7 +39,7 @@ class SslCertificateController extends Controller
 
         $certificates = $query->latest()->paginate(10);
 
-        return Inertia::render('ssl/certificates/index', [
+        return Inertia::render('dashboard/ssl/certificates/index', [
             'certificates' => $certificates,
             'caStatus' => $this->getCaStatus(),
             'filters' => $request->only('search'),
@@ -123,7 +123,7 @@ class SslCertificateController extends Controller
     {
         $this->authorizeOwner($certificate);
 
-        return Inertia::render('ssl/certificates/show', [
+        return Inertia::render('dashboard/ssl/certificates/show', [
             'certificate' => $certificate,
         ]);
     }

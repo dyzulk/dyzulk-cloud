@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Ssl;
+namespace App\Http\Controllers\Office;
 
 use App\Http\Controllers\Controller;
 use App\Models\CaCertificate;
@@ -16,8 +16,7 @@ class SslCaController extends Controller
     public function __construct(
         private CaSetupService $setupService,
         private CertificateRenewalService $renewal,
-    ) {
-    }
+    ) {}
 
     /**
      * Display the CA management dashboard.
@@ -64,7 +63,7 @@ class SslCaController extends Controller
         // Backend validation: Ensure Root exists before creating Intermediate
         if (str_starts_with($caType, 'intermediate_')) {
             $requiredRoot = str_contains($caType, '_ecc_') ? 'root_ecc' : 'root';
-            if (!CaCertificate::where('ca_type', $requiredRoot)->where('is_latest', true)->exists()) {
+            if (! CaCertificate::where('ca_type', $requiredRoot)->where('is_latest', true)->exists()) {
                 return back()->with('error', "Failed: {$requiredRoot} must be initialized first before generating {$caType}.");
             }
         }
@@ -78,7 +77,7 @@ class SslCaController extends Controller
 
             return back()->with('error', "CA '{$caType}' is already initialized.");
         } catch (Exception $e) {
-            return back()->with('error', 'Failed to initialize CA: ' . $e->getMessage());
+            return back()->with('error', 'Failed to initialize CA: '.$e->getMessage());
         }
     }
 

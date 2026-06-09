@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers\Dashboard\Settings;
 
 use App\Enums\ApiScope;
 use App\Http\Controllers\Controller;
@@ -25,7 +25,7 @@ class ApiTokenController extends Controller
             ];
         }, ApiScope::cases());
 
-        return Inertia::render('settings/api-tokens/index', [
+        return Inertia::render('dashboard/settings/api-tokens/index', [
             'tokens' => $tokens,
             'availableScopes' => $availableScopes,
             'newToken' => session('newToken'),
