@@ -11,7 +11,12 @@ Route::prefix('open')
 Route::prefix('client/v1')
     ->group(base_path('routes/api/client/v1.php'));
 
-// 3. Health check (Root level API endpoint)
+// 3. Webhooks API
+Route::prefix('webhooks')
+    ->group(base_path('routes/api/webhooks/index.php'));
+
+// 4. Health check (Root level API endpoint)
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
+

@@ -1,3 +1,8 @@
 <?php
 
-// Webhook endpoints (e.g. Stripe, GitHub, etc.) will be declared here.
+use App\Http\Controllers\Api\Webhooks\DeploymentWebhookController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/deploy', DeploymentWebhookController::class)
+    ->name('api.webhooks.deploy');
+
