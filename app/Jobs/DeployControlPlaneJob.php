@@ -15,7 +15,7 @@ class DeployControlPlaneJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('Memulai deployment otomatis via Webhook...');
+        Log::info('Starting automated deployment via Webhook...');
 
         $scriptPath = base_path('scripts/deploy.sh');
 
@@ -24,10 +24,10 @@ class DeployControlPlaneJob implements ShouldQueue
         $process->run();
 
         if (!$process->isSuccessful()) {
-            Log::error('Deployment GAGAL: ' . $process->getErrorOutput());
+            Log::error('Deployment FAILED: ' . $process->getErrorOutput());
             return;
         }
 
-        Log::info('Deployment SUKSES: ' . $process->getOutput());
+        Log::info('Deployment SUCCESS: ' . $process->getOutput());
     }
 }
