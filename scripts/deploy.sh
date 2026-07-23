@@ -4,6 +4,10 @@ set -e
 # Masuk ke direktori aplikasi
 cd /var/www/dyzulk-cloud
 
+echo "Membersihkan perubahan lokal di server..."
+git reset --hard
+git clean -fd
+
 echo "Menarik perubahan terbaru dari Git..."
 git pull origin main
 

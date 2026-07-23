@@ -19,7 +19,7 @@ class DeployControlPlaneJob implements ShouldQueue
 
         $scriptPath = base_path('scripts/deploy.sh');
 
-        $process = new Process([$scriptPath]);
+        $process = new Process(['bash', $scriptPath]);
         $process->setTimeout($this->timeout);
         $process->run();
 
