@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
+        if (env('FORCE_HTTPS', false)) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
