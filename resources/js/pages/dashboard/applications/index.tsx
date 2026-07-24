@@ -5,13 +5,12 @@ import {
     Globe,
     Layers,
     Plus,
-    PlusCircle,
     Server,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 
 type Props = {
