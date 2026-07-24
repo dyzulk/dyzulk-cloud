@@ -7,7 +7,16 @@ import { Input } from '@/components/ui/input';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Commands() {
+type Props = {
+    application?: {
+        id: number;
+        name: string;
+        environment: string;
+        status: string;
+    };
+};
+
+export default function Commands({ application }: Props) {
     const commonCommands = [
         'php artisan migrate --force',
         'php artisan cache:clear',
@@ -16,9 +25,11 @@ export default function Commands() {
         'php artisan queue:restart',
     ];
 
+    const appName = application?.name || 'laravel-starter';
+
     return (
         <>
-            <Head title="Commands - laravel-starter" />
+            <Head title={`Commands - ${appName}`} />
 
             {/* Command Runner Form */}
             <Card className="border-border/80 shadow-xs">
@@ -112,9 +123,9 @@ Commands.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];

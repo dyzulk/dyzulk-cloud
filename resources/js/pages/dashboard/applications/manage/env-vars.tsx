@@ -7,21 +7,33 @@ import { Input } from '@/components/ui/input';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
-export default function EnvVars() {
+type Props = {
+    application?: {
+        id: number;
+        name: string;
+        environment: string;
+        status: string;
+    };
+    envVars?: Array<{
+        id: number;
+        key: string;
+        value: string;
+    }>;
+};
+
+export default function EnvVars({ application, envVars = [] }: Props) {
     const [showSecrets, setShowSecrets] = useState(false);
 
-    const [envList] = useState([
-        { key: 'APP_ENV', value: 'production', secret: false },
-        { key: 'APP_DEBUG', value: 'false', secret: false },
-        { key: 'APP_KEY', value: 'base64:7f9a2c3b4d5e6f1a8b9c0d1e2f3a4b5c=', secret: true },
-        { key: 'DB_CONNECTION', value: 'pgsql', secret: false },
-        { key: 'DB_HOST', value: 'primary-db.internal', secret: false },
-        { key: 'REDIS_HOST', value: 'cache-redis.internal', secret: false },
-    ]);
+    const isSecret = (key: string) => {
+        const k = key.toUpperCase();
+        return k.includes('KEY') || k.includes('PASSWORD') || k.includes('SECRET') || k.includes('TOKEN');
+    };
+
+    const appName = application?.name || 'laravel-starter';
 
     return (
         <>
-            <Head title="Environment Variables - laravel-starter" />
+            <Head title={`Environment Variables - ${appName}`} />
 
             <Card className="border-border/80 shadow-xs">
                 <CardHeader className="border-b border-border/40 px-6 py-4 flex flex-row items-center justify-between">
@@ -61,28 +73,34 @@ export default function EnvVars() {
                         </div>
 
                         <div className="space-y-3 pt-2">
-                            {envList.map((item) => (
-                                <div key={item.key} className="flex gap-3">
-                                    <Input
-                                        value={item.key}
-                                        readOnly
-                                        className="h-9 font-mono text-xs max-w-[240px] bg-muted/30"
-                                    />
-                                    <Input
-                                        type={item.secret && !showSecrets ? 'password' : 'text'}
-                                        value={item.value}
-                                        readOnly
-                                        className="h-9 flex-1 font-mono text-xs"
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9 text-muted-foreground hover:text-rose-500"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                            {envVars.length > 0 ? (
+                                envVars.map((item) => (
+                                    <div key={item.id || item.key} className="flex gap-3">
+                                        <Input
+                                            value={item.key}
+                                            readOnly
+                                            className="h-9 font-mono text-xs max-w-[240px] bg-muted/30"
+                                        />
+                                        <Input
+                                            type={isSecret(item.key) && !showSecrets ? 'password' : 'text'}
+                                            value={item.value}
+                                            readOnly
+                                            className="h-9 flex-1 font-mono text-xs"
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-9 w-9 text-muted-foreground hover:text-rose-500"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-6 text-muted-foreground text-xs">
+                                    No environment variables configured.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </CardContent>
@@ -114,9 +132,9 @@ EnvVars.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];

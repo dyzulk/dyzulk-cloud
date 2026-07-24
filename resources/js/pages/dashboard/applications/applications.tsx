@@ -2,7 +2,6 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Box,
     GitBranch,
-    Globe,
     Layers,
     Plus,
     Server,
@@ -16,37 +15,66 @@ import ApplicationsTopNav from './components/top-nav';
 
 type Props = {
     applications?: Array<{
-        id: string;
+        id: number;
         name: string;
         environment: string;
-        repository: string;
+        repository_name: string;
         branch: string;
-        domainStatus: string;
         status: string;
     }>;
 };
 
-export default function ApplicationsList({ applications }: Props) {
+export default function ApplicationsList({ applications = [] }: Props) {
     const page = usePage();
     const currentTeam = (page.props as Record<string, any>).currentTeam;
     const teamSlug = currentTeam?.slug || 'default';
 
-    const defaultApps = [
-        {
-            id: 'app_1',
-            name: 'laravel-starter',
-            environment: 'production',
-            repository: 'dyzulk/laravel-starter',
-            branch: 'main',
-            domainStatus: 'Domain pending',
-            status: 'Never deployed',
-        },
-    ];
-
-    const appList = applications || defaultApps;
     const [viewMode, setViewMode] = useState<'list' | 'empty'>(
         applications && applications.length > 0 ? 'list' : 'empty',
     );
+
+    const getStatusIndicator = (status: string) => {
+        switch (status) {
+            case 'live':
+                return (
+                    <span className="flex items-center gap-1.5 text-xs">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Live
+                    </span>
+                );
+            case 'deploying':
+                return (
+                    <span className="flex items-center gap-1.5 text-xs">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        </span>
+                        Deploying
+                    </span>
+                );
+            case 'failed':
+                return (
+                    <span className="flex items-center gap-1.5 text-xs">
+                        <span className="relative flex h-2 w-2">
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        </span>
+                        Failed
+                    </span>
+                );
+            default:
+                return (
+                    <span className="flex items-center gap-1.5 text-xs">
+                        <span className="relative flex h-2 w-2">
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                        </span>
+                        Idle
+                    </span>
+                );
+        }
+    };
 
     return (
         <>
@@ -59,13 +87,11 @@ export default function ApplicationsList({ applications }: Props) {
                     viewMode={viewMode}
                 />
 
-                {viewMode === 'list' ? (
+                {viewMode === 'list' && applications.length > 0 ? (
                     <div className="space-y-6">
-                        {/* Grouping header placeholder, e.g. "dyzulkdev/laravel-starter" */}
                         <div className="flex flex-col space-y-3">
-                            {appList.map((app) => (
+                            {applications.map((app) => (
                                 <Card key={app.id} className="overflow-hidden border-border/80 shadow-xs hover:border-primary/30 transition-colors">
-                                    {/* Application Header Bar */}
                                     <div className="flex items-center justify-between border-b border-border/40 bg-muted/20 px-5 py-3">
                                         <div className="flex items-center space-x-3">
                                             <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
@@ -80,7 +106,6 @@ export default function ApplicationsList({ applications }: Props) {
                                         </Button>
                                     </div>
                                     
-                                    {/* Application Environment Row */}
                                     <Link
                                         href={`/${teamSlug}/applications/${app.name}/overview`}
                                         className="group block"
@@ -99,7 +124,7 @@ export default function ApplicationsList({ applications }: Props) {
                                                 <div className="flex flex-1 items-center justify-between text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-1.5 w-1/3">
                                                         <GitBranch className="h-3.5 w-3.5" />
-                                                        <span className="truncate">{app.repository}</span>
+                                                        <span className="truncate">{app.repository_name || 'No Repository'}</span>
                                                     </div>
                                                     
                                                     <div className="flex items-center gap-1.5 w-1/3">
@@ -108,13 +133,7 @@ export default function ApplicationsList({ applications }: Props) {
                                                     </div>
                                                     
                                                     <div className="flex items-center gap-2 w-1/4 justify-end">
-                                                        <span className="flex items-center gap-1.5 text-xs">
-                                                            <span className="relative flex h-2 w-2">
-                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                                            </span>
-                                                            Sleeping
-                                                        </span>
+                                                        {getStatusIndicator(app.status)}
                                                     </div>
                                                 </div>
                                             </div>

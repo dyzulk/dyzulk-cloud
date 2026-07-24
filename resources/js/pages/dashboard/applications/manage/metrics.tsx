@@ -4,10 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Metrics() {
+type Props = {
+    application?: {
+        id: number;
+        name: string;
+        environment: string;
+        status: string;
+    };
+};
+
+export default function Metrics({ application }: Props) {
+    const appName = application?.name || 'laravel-starter';
+
     return (
         <>
-            <Head title="Metrics - laravel-starter" />
+            <Head title={`Metrics - ${appName}`} />
 
             {/* Stat Summary Cards */}
 
@@ -129,9 +140,9 @@ Metrics.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];

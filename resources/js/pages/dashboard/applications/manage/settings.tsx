@@ -7,10 +7,33 @@ import { Label } from '@/components/ui/label';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Settings() {
+type Props = {
+    application?: {
+        id: number;
+        name: string;
+        environment: string;
+        status: string;
+        repository_name?: string;
+        branch?: string;
+        domains?: Array<{
+            id: number;
+            domain: string;
+            is_primary: boolean;
+        }>;
+    };
+};
+
+export default function Settings({ application }: Props) {
+    const appName = application?.name || 'laravel-starter';
+    const repoName = application?.repository_name || 'dyzulk/laravel-starter';
+    const branchName = application?.branch || 'main';
+
+    const defaultCloudDomain = application?.domains?.find(d => !d.is_primary)?.domain 
+        || `${appName}-dyzulk.dyzulk.cloud`;
+
     return (
         <>
-            <Head title="Settings - laravel-starter" />
+            <Head title={`Settings - ${appName}`} />
 
                 {/* Domain Settings */}
                 <Card className="border-border/80 shadow-xs">
@@ -27,7 +50,7 @@ export default function Settings() {
                             <Label className="text-xs font-medium">Default Cloud Domain</Label>
                             <div className="flex items-center gap-2">
                                 <Input
-                                    value="laravel-starter-dyzulk.dyzulk.cloud"
+                                    value={defaultCloudDomain}
                                     readOnly
                                     className="font-mono text-xs"
                                 />
@@ -68,7 +91,7 @@ export default function Settings() {
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium">GitHub Repository</Label>
                                 <Input
-                                    value="dyzulk/laravel-starter"
+                                    value={repoName}
                                     readOnly
                                     className="font-mono text-xs"
                                 />
@@ -76,7 +99,7 @@ export default function Settings() {
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium">Production Branch</Label>
                                 <Input
-                                    defaultValue="main"
+                                    defaultValue={branchName}
                                     className="font-mono text-xs"
                                 />
                             </div>
@@ -139,9 +162,9 @@ Settings.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];

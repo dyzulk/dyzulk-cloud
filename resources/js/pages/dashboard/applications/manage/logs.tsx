@@ -7,7 +7,16 @@ import { Input } from '@/components/ui/input';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Logs() {
+type Props = {
+    application?: {
+        id: number;
+        name: string;
+        environment: string;
+        status: string;
+    };
+};
+
+export default function Logs({ application }: Props) {
     const mockLogs = [
         { time: '09:50:12', level: 'INFO', message: '[PHP-FPM] worker 12 spawned successfully' },
         { time: '09:50:15', level: 'INFO', message: 'GET / 200 OK - 24ms (Inertia SSR rendered)' },
@@ -16,9 +25,11 @@ export default function Logs() {
         { time: '09:51:40', level: 'WARN', message: '[Cache] Redis ping latency slightly higher than usual (12ms)' },
     ];
 
+    const appName = application?.name || 'laravel-starter';
+
     return (
         <>
-            <Head title="Runtime Logs - laravel-starter" />
+            <Head title={`Runtime Logs - ${appName}`} />
 
             {/* Filter & Actions Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -115,9 +126,9 @@ Logs.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];

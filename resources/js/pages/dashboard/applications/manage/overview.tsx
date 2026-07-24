@@ -1,12 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    ArrowRight,
     ArrowUpRight,
     CheckCircle2,
     Cpu,
     Database,
-    ExternalLink,
-    GitBranch,
     Globe,
     HardDrive,
     Layers,
@@ -14,10 +11,11 @@ import {
     Plus,
     Server,
     Shield,
+    XCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ApplicationLayout from '@/layouts/app/application-layout';
 import AppLayout from '@/layouts/app-layout';
 
@@ -30,6 +28,32 @@ type Props = {
         branch: string;
         compute: string;
         status: 'live' | 'deploying' | 'failed' | 'idle';
+        deployments?: Array<{
+            id: number;
+            commit_sha: string;
+            commit_message: string;
+            branch: string;
+            status: string;
+            created_at: string;
+        }>;
+        domains?: Array<{
+            id: number;
+            domain: string;
+            is_primary: boolean;
+            status: string;
+        }>;
+        resources?: Array<{
+            id: number;
+            name: string;
+            type: string;
+            status: string;
+            connection_details?: {
+                host?: string;
+                port?: number;
+                database?: string;
+                bucket?: string;
+            };
+        }>;
     };
 };
 
@@ -46,6 +70,49 @@ export default function Overview({ application }: Props) {
         branch: 'main',
         compute: 'Flex 512 MiB',
         status: 'live' as const,
+        deployments: [],
+        domains: [],
+        resources: [],
+    };
+
+    const getResourceIcon = (type: string) => {
+        switch (type) {
+            case 'postgresql':
+                return Database;
+            case 'redis':
+            case 'valkey':
+                return Server;
+            default:
+                return HardDrive;
+        }
+    };
+
+    const getResourceLabel = (type: string) => {
+        switch (type) {
+            case 'postgresql':
+                return 'PostgreSQL';
+            case 'redis':
+                return 'Redis';
+            case 'valkey':
+                return 'Valkey';
+            case 's3':
+                return 'R2 Bucket';
+            default:
+                return type.toUpperCase();
+        }
+    };
+
+    const getResourceDetails = (res: any) => {
+        if (res.type === 'postgresql') {
+            return `Port ${res.connection_details?.port || 5432} • ${res.connection_details?.database || 'db'}`;
+        }
+        if (res.type === 'redis' || res.type === 'valkey') {
+            return `Port ${res.connection_details?.port || 6379} • In-Memory`;
+        }
+        if (res.type === 's3') {
+            return `${res.connection_details?.bucket || 'bucket'} • Object Store`;
+        }
+        return 'Connected resource';
     };
 
     return (
@@ -97,20 +164,21 @@ export default function Overview({ application }: Props) {
                                 <span className="font-semibold text-foreground text-xs">Routing Domains</span>
                             </div>
                             <div className="space-y-1.5 text-[11px] text-muted-foreground">
-                                <div className="flex items-center justify-between">
-                                    <span className="flex items-center gap-1">
-                                        <Lock className="h-3 w-3 text-emerald-500" />
-                                        dyzulk.com
-                                    </span>
-                                    <Badge variant="outline" className="text-[8px] scale-90 px-1 border-blue-500/20 bg-blue-500/5 text-blue-600">Primary</Badge>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="flex items-center gap-1 text-muted-foreground/80">
-                                        <Lock className="h-3 w-3 text-emerald-500" />
-                                        {appData.name}.cloud
-                                    </span>
-                                    <span className="text-[9px] text-muted-foreground">Default</span>
-                                </div>
+                                {appData.domains && appData.domains.length > 0 ? (
+                                    appData.domains.map((dom) => (
+                                        <div key={dom.id} className="flex items-center justify-between">
+                                            <span className="flex items-center gap-1">
+                                                <Lock className="h-3 w-3 text-emerald-500" />
+                                                {dom.domain}
+                                            </span>
+                                            {dom.is_primary && (
+                                                <Badge variant="outline" className="text-[8px] scale-90 px-1 border-blue-500/20 bg-blue-500/5 text-blue-600">Primary</Badge>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-[10px] text-muted-foreground">No domains configured</div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -126,7 +194,6 @@ export default function Overview({ application }: Props) {
                                 </linearGradient>
                             </defs>
                             <path d="M 0,30 L 50,30 L 50,50 L 100,50 M 0,75 L 50,75 L 50,50" stroke="url(#grad-edge)" strokeWidth="1.5" fill="none" />
-                            {/* Static Intersection Dot */}
                             <circle cx="50" cy="50" r="3.5" className="fill-blue-500" />
                         </svg>
                     </div>
@@ -136,7 +203,7 @@ export default function Overview({ application }: Props) {
                         <div className="flex items-center justify-between border-b border-border/30 pb-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">App Cluster</span>
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-purple-500/20 bg-purple-500/5 text-purple-600 dark:text-purple-400">
-                                Live
+                                {appData.status === 'live' ? 'Live' : 'Active'}
                             </Badge>
                         </div>
 
@@ -156,9 +223,8 @@ export default function Overview({ application }: Props) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Region</span>
-                                    <span className="font-medium text-foreground">ap-southeast-1</span>
+                                    <span className="font-medium text-foreground">{appData.region}</span>
                                 </div>
-                                {/* Mini CPU/RAM Usage bars */}
                                 <div className="space-y-1 pt-1 border-t border-border/40">
                                     <div className="flex justify-between text-[9px]">
                                         <span>CPU Usage</span>
@@ -204,7 +270,6 @@ export default function Overview({ application }: Props) {
                                 </linearGradient>
                             </defs>
                             <path d="M 0,50 L 50,50 L 50,20 L 100,20 M 50,50 L 50,50 L 50,50 L 100,50 M 50,50 L 50,80 L 100,80" stroke="url(#grad-resources)" strokeWidth="1.5" fill="none" />
-                            {/* Static Intersection Dot */}
                             <circle cx="50" cy="50" r="3.5" className="fill-purple-500" />
                         </svg>
                     </div>
@@ -218,43 +283,26 @@ export default function Overview({ application }: Props) {
                             </Badge>
                         </div>
 
-                        {/* Database (PostgreSQL) */}
-                        <div className="group rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5">
-                            <div className="flex items-center justify-between mb-1.5">
-                                <div className="flex items-center gap-1.5">
-                                    <Database className="h-3.5 w-3.5 text-emerald-500" />
-                                    <span className="font-semibold text-foreground text-[11px]">primary-db</span>
-                                </div>
-                                <span className="text-[9px] px-1 text-emerald-600 bg-emerald-500/10 rounded">PostgreSQL</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">10 GB Storage • AP Singapore</p>
-                        </div>
+                        {appData.resources && appData.resources.length > 0 ? (
+                            appData.resources.map((res) => {
+                                const Icon = getResourceIcon(res.type);
+                                return (
+                                    <div key={res.id} className="group rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <Icon className="h-3.5 w-3.5 text-emerald-500" />
+                                                <span className="font-semibold text-foreground text-[11px]">{res.name}</span>
+                                            </div>
+                                            <span className="text-[9px] px-1 text-emerald-600 bg-emerald-500/10 rounded">{getResourceLabel(res.type)}</span>
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground">{getResourceDetails(res)}</p>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-[10px] text-muted-foreground py-2 text-center">No resources attached</div>
+                        )}
 
-                        {/* Cache (Redis) */}
-                        <div className="group rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5">
-                            <div className="flex items-center justify-between mb-1.5">
-                                <div className="flex items-center gap-1.5">
-                                    <Server className="h-3.5 w-3.5 text-emerald-500" />
-                                    <span className="font-semibold text-foreground text-[11px]">cache-redis</span>
-                                </div>
-                                <span className="text-[9px] px-1 text-emerald-600 bg-emerald-500/10 rounded">Redis 7.2</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">256 MB RAM • In-Memory Cache</p>
-                        </div>
-
-                        {/* Storage (S3 Bucket) */}
-                        <div className="group rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5">
-                            <div className="flex items-center justify-between mb-1.5">
-                                <div className="flex items-center gap-1.5">
-                                    <HardDrive className="h-3.5 w-3.5 text-emerald-500" />
-                                    <span className="font-semibold text-foreground text-[11px]">uploads-bucket</span>
-                                </div>
-                                <span className="text-[9px] px-1 text-emerald-600 bg-emerald-500/10 rounded">R2 Bucket</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">S3-Compatible Object Store</p>
-                        </div>
-
-                        {/* Add Resource Action Card */}
                         <Button variant="outline" size="sm" className="w-full border-dashed text-xs h-9 justify-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/30">
                             <Plus className="h-3.5 w-3.5" />
                             Attach Resource
@@ -281,49 +329,43 @@ export default function Overview({ application }: Props) {
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="divide-y divide-border/40 text-xs">
-                        <div className="flex items-center justify-between p-4 hover:bg-muted/20">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <div>
-                                    <div className="font-medium text-foreground">
-                                        Update application routes and sidebar layout
+                        {appData.deployments && appData.deployments.length > 0 ? (
+                            appData.deployments.map((dep) => (
+                                <div key={dep.id} className="flex items-center justify-between p-4 hover:bg-muted/20">
+                                    <div className="flex items-center gap-3">
+                                        {dep.status === 'success' ? (
+                                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                        ) : (
+                                            <XCircle className="h-4 w-4 text-rose-500" />
+                                        )}
+                                        <div>
+                                            <div className="font-medium text-foreground">
+                                                {dep.commit_message || 'No commit message'}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                                                <span className="font-mono">{dep.commit_sha ? dep.commit_sha.substring(0, 7) : 'N/A'}</span>
+                                                <span>•</span>
+                                                <span>{dep.branch} branch</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                        <span className="font-mono">dep_9f3a1b2</span>
-                                        <span>•</span>
-                                        <span>main branch</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-right">
-                                <span className="text-muted-foreground">2 mins ago</span>
-                                <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600">
-                                    Success
-                                </Badge>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 hover:bg-muted/20">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <div>
-                                    <div className="font-medium text-foreground">
-                                        Configure Inertia v3 SSR bundler
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                        <span className="font-mono">dep_4e8c9d0</span>
-                                        <span>•</span>
-                                        <span>main branch</span>
+                                    <div className="flex items-center gap-4 text-right">
+                                        <Badge
+                                            variant="outline"
+                                            className={
+                                                dep.status === 'success'
+                                                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
+                                                    : 'border-rose-500/30 bg-rose-500/10 text-rose-600'
+                                            }
+                                        >
+                                            {dep.status === 'success' ? 'Success' : 'Failed'}
+                                        </Badge>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4 text-right">
-                                <span className="text-muted-foreground">1 hour ago</span>
-                                <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600">
-                                    Success
-                                </Badge>
-                            </div>
-                        </div>
+                            ))
+                        ) : (
+                            <div className="p-4 text-muted-foreground text-center">No deployments found.</div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -354,9 +396,9 @@ Overview.layout = (props: any) => [
     [
         ApplicationLayout,
         {
-            applicationName: 'laravel-starter',
-            environment: 'production',
-            status: 'live',
+            applicationName: props.application?.name || 'laravel-starter',
+            environment: props.application?.environment || 'production',
+            status: props.application?.status || 'live',
         },
     ],
 ];
