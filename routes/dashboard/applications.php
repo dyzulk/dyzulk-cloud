@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::name('applications.')->group(function () {
     Route::inertia('applications', 'dashboard/applications/index')->name('index');
+    Route::inertia('applications/list', 'dashboard/applications/applications')->name('list');
     Route::inertia('applications/create', 'dashboard/applications/create')->name('create');
 
     Route::prefix('applications/{application}')->group(function () {

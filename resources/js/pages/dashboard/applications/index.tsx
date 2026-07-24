@@ -4,184 +4,125 @@ import {
     GitBranch,
     Globe,
     Layers,
-    Plus,
     Server,
 } from 'lucide-react';
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import ApplicationsTopNav from './components/top-nav';
 
-type Props = {
-    applications?: Array<{
-        id: string;
-        name: string;
-        environment: string;
-        repository: string;
-        branch: string;
-        domainStatus: string;
-        status: string;
-    }>;
-};
-
-export default function ApplicationsIndex({ applications }: Props) {
+export default function ApplicationsOverview() {
     const page = usePage();
     const currentTeam = (page.props as Record<string, any>).currentTeam;
     const teamSlug = currentTeam?.slug || 'default';
 
-    const defaultApps = [
-        {
-            id: 'app_1',
-            name: 'laravel-starter',
-            environment: 'production',
-            repository: 'dyzulk/laravel-starter',
-            branch: 'main',
-            domainStatus: 'Domain pending',
-            status: 'Never deployed',
-        },
-    ];
+    // Mock data for overview
+    const recentlyDeployed = {
+        id: 'app_1',
+        name: 'laravel-starter',
+        environment: 'production',
+        repository: 'dyzulk/laravel-starter',
+        branch: 'main',
+        domainStatus: 'Domain pending',
+        status: 'Never deployed',
+    };
 
-    const appList = applications || defaultApps;
-    const [viewMode, setViewMode] = useState<'list' | 'empty'>(
-        applications && applications.length > 0 ? 'list' : 'empty',
-    );
+    const latestDeployments = [
+        // Empty for now or mock data
+    ];
 
     return (
         <>
-            <Head title="Applications" />
+            <Head title="Applications Overview" />
 
             <div className="flex flex-col gap-6 p-6">
-                {/* Top Tabs Navigation (Laravel Cloud Style) */}
-                <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                    <div className="flex items-center space-x-6 text-sm font-medium">
-                        <Link
-                            href={`/${teamSlug}/dashboard`}
-                            className="text-muted-foreground transition-colors hover:text-foreground"
-                        >
-                            Overview
-                        </Link>
-                        <span className="relative border-b-2 border-primary pb-3 font-semibold text-foreground">
-                            Applications
-                        </span>
-                        <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
-                            Resources
-                        </span>
-                        <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
-                            Usage
-                        </span>
-                        <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
-                            Settings
-                        </span>
-                    </div>
+                <ApplicationsTopNav activeTab="overview" />
 
-                    {/* View Switcher Toggle for Demo */}
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setViewMode(viewMode === 'list' ? 'empty' : 'list')}
-                            className="h-7 text-xs text-muted-foreground"
+                <div className="space-y-6">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Recently deployed
+                    </h2>
+
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {/* Big Card for Recently Deployed */}
+                        <Link
+                            href={`/${teamSlug}/applications/${recentlyDeployed.name}/overview`}
+                            className="group block"
                         >
-                            Toggle Demo State ({viewMode === 'list' ? 'Show Empty' : 'Show List'})
-                        </Button>
-                        <Button
-                            size="sm"
-                            asChild
-                            className="h-8 gap-1.5 bg-neutral-900 text-xs text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                        >
-                            <Link href={`/${teamSlug}/applications/create`}>
-                                <Plus className="h-4 w-4" />
-                                New application
-                            </Link>
-                        </Button>
+                            <Card className="border-border/80 p-6 shadow-xs transition-all hover:border-primary/50 hover:shadow-md h-full">
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            <Box className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-base">
+                                                {recentlyDeployed.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px]"
+                                                >
+                                                    {recentlyDeployed.environment}
+                                                </Badge>
+                                                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                    <span className="relative flex h-2 w-2">
+                                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                                    </span>
+                                                    Sleeping
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-2">
+                                        <GitBranch className="h-4 w-4" />
+                                        <span>{recentlyDeployed.repository}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Globe className="h-4 w-4 text-muted-foreground/70" />
+                                        <span>{recentlyDeployed.domainStatus}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Server className="h-4 w-4 text-muted-foreground/70" />
+                                        <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded text-[10px]">{recentlyDeployed.branch}</span>
+                                        <span>•</span>
+                                        <span>{recentlyDeployed.status}</span>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Link>
                     </div>
                 </div>
 
-                {/* Conditional Rendering: List View vs Empty State */}
-                {viewMode === 'list' ? (
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Recently deployed
-                            </h2>
+                <div className="mt-8 space-y-4">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Latest deployments
+                    </h2>
+                    
+                    {latestDeployments.length === 0 ? (
+                        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
+                            <Layers className="h-8 w-8 text-muted-foreground/60 mb-3" />
+                            <p className="text-sm text-muted-foreground">
+                                No deployments found.
+                            </p>
                         </div>
-
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {appList.map((app) => (
-                                <Link
-                                    key={app.id}
-                                    href={`/${teamSlug}/applications/${app.name}/overview`}
-                                    className="group block"
-                                >
-                                    <Card className="border-border/80 p-5 shadow-xs transition-all hover:border-primary/50 hover:shadow-md">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center space-x-2.5">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                                    <Box className="h-4 w-4" />
-                                                </div>
-                                                <span className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm">
-                                                    {app.name}
-                                                </span>
-                                            </div>
-                                            <Badge
-                                                variant="secondary"
-                                                className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px]"
-                                            >
-                                                {app.environment}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-                                            <div className="flex items-center gap-1.5">
-                                                <GitBranch className="h-3.5 w-3.5" />
-                                                <span>{app.repository}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-[11px]">
-                                                <Globe className="h-3.5 w-3.5 text-muted-foreground/70" />
-                                                <span>{app.domainStatus}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-[11px]">
-                                                <Server className="h-3.5 w-3.5 text-muted-foreground/70" />
-                                                <span className="font-mono">{app.branch}</span>
-                                                <span>•</span>
-                                                <span>{app.status}</span>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    /* Empty State View (matching Laravel Cloud Image 3) */
-                    <div className="flex min-h-[420px] flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
-                        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-muted/40 p-4 shadow-inner">
-                            <Layers className="h-12 w-12 text-muted-foreground/60" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground">
-                            No applications yet
-                        </h3>
-                        <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                            Get started and create your first application service.
-                        </p>
-                        <Button
-                            asChild
-                            className="mt-6 gap-1.5 bg-neutral-900 text-xs text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                        >
-                            <Link href={`/${teamSlug}/applications/create`}>
-                                <Plus className="h-4 w-4" />
-                                New application
-                            </Link>
-                        </Button>
-                    </div>
-                )}
+                    ) : (
+                        <Card className="overflow-hidden">
+                            {/* Table logic would go here */}
+                        </Card>
+                    )}
+                </div>
             </div>
         </>
     );
 }
 
-ApplicationsIndex.layout = (props: any) => ({
+ApplicationsOverview.layout = (props: any) => ({
     breadcrumbs: [
         {
             title: 'Dashboard',
