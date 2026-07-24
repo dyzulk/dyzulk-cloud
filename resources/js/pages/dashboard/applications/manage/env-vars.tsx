@@ -22,59 +22,50 @@ export default function EnvVars() {
         <>
             <Head title="Environment Variables - laravel-starter" />
 
-            <div className="flex flex-col gap-6 p-6">
-                <div className="flex items-center justify-between border-b border-border/60 pb-5">
+            <Card className="border-border/80 shadow-xs">
+                <CardHeader className="border-b border-border/40 px-6 py-4 flex flex-row items-center justify-between">
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight text-foreground">
-                            Environment Variables
-                        </h1>
-                        <p className="text-xs text-muted-foreground">
+                        <CardTitle className="text-base font-semibold">
+                            Variables & Secrets
+                        </CardTitle>
+                        <CardDescription className="text-xs">
                             Secrets and configuration parameters injected into the runtime container at startup.
-                        </p>
+                        </CardDescription>
                     </div>
-
                     <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setShowSecrets(!showSecrets)}
-                            className="gap-1.5 text-xs"
+                            className="h-8 gap-1.5 text-xs"
                         >
                             {showSecrets ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                             {showSecrets ? 'Hide Secrets' : 'Show Secrets'}
                         </Button>
-                        <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button size="sm" className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
                             <Save className="h-3.5 w-3.5" />
                             Save Changes
                         </Button>
                     </div>
-                </div>
-
-                <Card className="border-border/80 shadow-xs">
-                    <CardHeader className="border-b border-border/40 px-6 py-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="text-base font-semibold">
-                                    Variables & Secrets
-                                </CardTitle>
-                                <CardDescription className="text-xs">
-                                    Key-value pairs accessible via env() in your Laravel application.
-                                </CardDescription>
-                            </div>
-                            <Button variant="outline" size="sm" className="h-8 gap-1 text-xs">
+                </CardHeader>
+                <CardContent className="p-6">
+                    <div className="space-y-4">
+                        <div className="flex gap-3 border-b border-border/60 pb-4">
+                            <Input placeholder="KEY" className="h-9 font-mono text-xs max-w-[240px]" />
+                            <Input placeholder="VALUE" className="h-9 font-mono text-xs" />
+                            <Button variant="outline" size="sm" className="h-9 gap-1 text-xs">
                                 <Plus className="h-3.5 w-3.5" />
-                                Add Variable
+                                Add
                             </Button>
                         </div>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        <div className="space-y-3">
-                            {envList.map((item, index) => (
-                                <div key={index} className="flex items-center gap-3">
+
+                        <div className="space-y-3 pt-2">
+                            {envList.map((item) => (
+                                <div key={item.key} className="flex gap-3">
                                     <Input
                                         value={item.key}
                                         readOnly
-                                        className="h-9 w-1/3 font-mono text-xs font-semibold"
+                                        className="h-9 font-mono text-xs max-w-[240px] bg-muted/30"
                                     />
                                     <Input
                                         type={item.secret && !showSecrets ? 'password' : 'text'}
@@ -92,9 +83,9 @@ export default function EnvVars() {
                                 </div>
                             ))}
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </CardContent>
+            </Card>
         </>
     );
 }

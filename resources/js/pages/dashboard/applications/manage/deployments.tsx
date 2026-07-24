@@ -53,87 +53,70 @@ export default function Deployments() {
         <>
             <Head title="Deployments - laravel-starter" />
 
-            <div className="flex flex-col gap-6 p-6">
-                <div className="flex items-center justify-between border-b border-border/60 pb-5">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-foreground">
-                            Deployments
-                        </h1>
-                        <p className="text-xs text-muted-foreground">
-                            View build history, deployment status, and commit logs.
-                        </p>
-                    </div>
-                    <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
-                        <Rocket className="h-3.5 w-3.5" />
-                        Trigger Deploy
-                    </Button>
-                </div>
-
-                <Card className="border-border/80 shadow-xs">
-                    <CardHeader className="border-b border-border/40 px-6 py-4">
-                        <CardTitle className="text-base font-semibold">
-                            Deployment History
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                            All automatic git pushes and manual deployment triggers.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="divide-y divide-border/40 text-xs">
-                            {deploymentsList.map((dep) => (
-                                <div
-                                    key={dep.id}
-                                    className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-muted/20 md:flex-row md:items-center"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        {dep.status === 'success' ? (
-                                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                                        ) : (
-                                            <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-                                        )}
-                                        <div>
-                                            <div className="font-medium text-foreground">
-                                                {dep.message}
-                                            </div>
-                                            <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                                                <span className="flex items-center gap-1 font-mono">
-                                                    <GitCommit className="h-3 w-3" />
-                                                    {dep.commit}
-                                                </span>
-                                                <span>•</span>
-                                                <span className="font-mono">{dep.branch}</span>
-                                                <span>•</span>
-                                                <span>by {dep.author}</span>
-                                            </div>
+            <Card className="border-border/80 shadow-xs">
+                <CardHeader className="border-b border-border/40 px-6 py-4">
+                    <CardTitle className="text-base font-semibold">
+                        Deployment History
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                        All automatic git pushes and manual deployment triggers.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="divide-y divide-border/40 text-xs">
+                        {deploymentsList.map((dep) => (
+                            <div
+                                key={dep.id}
+                                className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-muted/20 md:flex-row md:items-center"
+                            >
+                                <div className="flex items-start gap-3">
+                                    {dep.status === 'success' ? (
+                                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                                    ) : (
+                                        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                                    )}
+                                    <div>
+                                        <div className="font-medium text-foreground">
+                                            {dep.message}
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-4 md:justify-end">
-                                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
-                                                {dep.duration}
+                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                                            <span className="flex items-center gap-1 font-mono">
+                                                <GitCommit className="h-3 w-3" />
+                                                {dep.commit}
                                             </span>
                                             <span>•</span>
-                                            <span>{dep.createdAt}</span>
+                                            <span className="font-mono">{dep.branch}</span>
+                                            <span>•</span>
+                                            <span>by {dep.author}</span>
                                         </div>
-                                        <Badge
-                                            variant="outline"
-                                            className={
-                                                dep.status === 'success'
-                                                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
-                                                    : 'border-rose-500/30 bg-rose-500/10 text-rose-600'
-                                            }
-                                        >
-                                            {dep.status === 'success' ? 'Success' : 'Failed'}
-                                        </Badge>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+
+                                <div className="flex items-center justify-between gap-4 md:justify-end">
+                                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {dep.duration}
+                                        </span>
+                                        <span>•</span>
+                                        <span>{dep.createdAt}</span>
+                                    </div>
+                                    <Badge
+                                        variant="outline"
+                                        className={
+                                            dep.status === 'success'
+                                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
+                                                : 'border-rose-500/30 bg-rose-500/10 text-rose-600'
+                                        }
+                                    >
+                                        {dep.status === 'success' ? 'Success' : 'Failed'}
+                                    </Badge>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </>
     );
 }

@@ -11,16 +11,6 @@ export default function Settings() {
         <>
             <Head title="Settings - laravel-starter" />
 
-            <div className="flex flex-col gap-6 p-6">
-                <div className="border-b border-border/60 pb-5">
-                    <h1 className="text-xl font-bold tracking-tight text-foreground">
-                        Application Settings
-                    </h1>
-                    <p className="text-xs text-muted-foreground">
-                        Configure domains, Git repository linkage, build configuration, and application deletion.
-                    </p>
-                </div>
-
                 {/* Domain Settings */}
                 <Card className="border-border/80 shadow-xs">
                     <CardHeader className="border-b border-border/40 px-6 py-4">
@@ -121,7 +111,6 @@ export default function Settings() {
                         </Button>
                     </CardContent>
                 </Card>
-            </div>
         </>
     );
 }

@@ -8,15 +8,7 @@ export default function Metrics() {
         <>
             <Head title="Metrics - laravel-starter" />
 
-            <div className="flex flex-col gap-6 p-6">
-                <div className="border-b border-border/60 pb-5">
-                    <h1 className="text-xl font-bold tracking-tight text-foreground">
-                        Metrics & Performance
-                    </h1>
-                    <p className="text-xs text-muted-foreground">
-                        Real-time resource utilization, CPU usage, RAM consumption, and HTTP request rates.
-                    </p>
-                </div>
+            {/* Stat Summary Cards */}
 
                 {/* Stat Summary Cards */}
                 <div className="grid gap-4 md:grid-cols-4">
@@ -109,7 +101,6 @@ export default function Metrics() {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
         </>
     );
 }

@@ -34,42 +34,31 @@ export default function Resources() {
         <>
             <Head title="Resources - laravel-starter" />
 
-            <div className="flex flex-col gap-6 p-6">
-                <div className="flex items-center justify-between border-b border-border/60 pb-5">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-foreground">
-                            Resources & Databases
-                        </h1>
-                        <p className="text-xs text-muted-foreground">
-                            Manage managed databases, caches, and storage buckets attached to this service.
-                        </p>
-                    </div>
+            <div className="flex justify-end">
+                <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
+                    <Plus className="h-3.5 w-3.5" />
+                    Attach Resource
+                </Button>
+            </div>
 
-                    <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
-                        <Plus className="h-3.5 w-3.5" />
-                        Attach Resource
-                    </Button>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-3">
-                    {attachedResources.map((res) => (
-                        <Card key={res.name} className="border-border/80 p-5 shadow-xs transition-all hover:border-primary/40">
-                            <div className="flex items-center justify-between">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                    <res.icon className="h-5 w-5" />
-                                </div>
-                                <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-[11px] text-emerald-600">
-                                    Connected
-                                </Badge>
+            <div className="grid gap-4 md:grid-cols-3">
+                {attachedResources.map((res) => (
+                    <Card key={res.name} className="border-border/80 p-5 shadow-xs transition-all hover:border-primary/40">
+                        <div className="flex items-center justify-between">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <res.icon className="h-5 w-5" />
                             </div>
-                            <div className="mt-4">
-                                <h3 className="font-semibold text-foreground text-sm">{res.name}</h3>
-                                <p className="text-xs font-medium text-muted-foreground">{res.type}</p>
-                                <p className="mt-2 text-[11px] text-muted-foreground">{res.details}</p>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
+                            <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-[11px] text-emerald-600">
+                                Connected
+                            </Badge>
+                        </div>
+                        <div className="mt-4">
+                            <h3 className="font-semibold text-foreground text-sm">{res.name}</h3>
+                            <p className="text-xs font-medium text-muted-foreground">{res.type}</p>
+                            <p className="mt-2 text-[11px] text-muted-foreground">{res.details}</p>
+                        </div>
+                    </Card>
+                ))}
             </div>
         </>
     );
