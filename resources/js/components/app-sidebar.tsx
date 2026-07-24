@@ -40,7 +40,7 @@ export function AppSidebar() {
         },
         {
             title: 'Applications',
-            href: `/${teamSlug}/applications/laravel-starter/overview`,
+            href: `/${teamSlug}/applications`,
             icon: Box,
         },
         {
