@@ -126,9 +126,8 @@ export default function Overview({ application }: Props) {
                                 </linearGradient>
                             </defs>
                             <path d="M 0,30 L 50,30 L 50,50 L 100,50 M 0,75 L 50,75 L 50,50" stroke="url(#grad-edge)" strokeWidth="1.5" fill="none" />
-                            {/* Animated Pulse Dot */}
+                            {/* Static Intersection Dot */}
                             <circle cx="50" cy="50" r="3.5" className="fill-blue-500" />
-                            <circle cx="50" cy="50" r="7" className="stroke-blue-500/50 fill-none stroke-2 animate-ping" />
                         </svg>
                     </div>
 
@@ -205,9 +204,8 @@ export default function Overview({ application }: Props) {
                                 </linearGradient>
                             </defs>
                             <path d="M 0,50 L 50,50 L 50,20 L 100,20 M 50,50 L 50,50 L 50,50 L 100,50 M 50,50 L 50,80 L 100,80" stroke="url(#grad-resources)" strokeWidth="1.5" fill="none" />
-                            {/* Animated Pulse Dot */}
+                            {/* Static Intersection Dot */}
                             <circle cx="50" cy="50" r="3.5" className="fill-purple-500" />
-                            <circle cx="50" cy="50" r="7" className="stroke-purple-500/50 fill-none stroke-2 animate-ping" />
                         </svg>
                     </div>
 
