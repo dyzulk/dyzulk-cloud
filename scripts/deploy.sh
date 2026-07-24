@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# deploy script khusus control plane
 # Masuk ke direktori aplikasi
 cd /var/www/dyzulk-cloud
 
