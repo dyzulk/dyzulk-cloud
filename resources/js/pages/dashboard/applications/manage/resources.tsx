@@ -82,8 +82,8 @@ Resources.layout = (props: any) => ({
             href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
         },
         {
-            title: 'laravel-starter',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications/laravel-starter/overview` : '#',
+            title: 'Applications',
+            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
         },
         {
             title: 'Resources',

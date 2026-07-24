@@ -43,7 +43,9 @@ export default function ApplicationsIndex({ applications }: Props) {
     ];
 
     const appList = applications || defaultApps;
-    const [viewMode, setViewMode] = useState<'list' | 'empty'>(appList.length > 0 ? 'list' : 'empty');
+    const [viewMode, setViewMode] = useState<'list' | 'empty'>(
+        applications && applications.length > 0 ? 'list' : 'empty',
+    );
 
     return (
         <>

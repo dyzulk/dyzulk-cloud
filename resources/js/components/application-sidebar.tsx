@@ -140,9 +140,9 @@ export function ApplicationSidebar({
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild className="text-muted-foreground hover:text-foreground">
-                            <Link href={dashboardUrl}>
+                            <Link href={`/${teamSlug}/applications`}>
                                 <ArrowLeft className="h-4 w-4" />
-                                <span>Back to Dashboard</span>
+                                <span>Back to Applications</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

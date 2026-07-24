@@ -244,7 +244,7 @@ Overview.layout = (props: any) => ({
         },
         {
             title: 'Applications',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications/laravel-starter/overview` : '#',
+            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
         },
         {
             title: 'Overview',
