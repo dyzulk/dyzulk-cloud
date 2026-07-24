@@ -10,7 +10,7 @@ Route::name('applications.')->group(function () {
     Route::inertia('applications/settings', 'dashboard/applications/settings')->name('settings');
     Route::inertia('applications/create', 'dashboard/applications/create')->name('create');
 
-    Route::prefix('applications/{application}')->group(function () {
+    Route::prefix('applications/{application}')->name('manage.')->group(function () {
         Route::inertia('overview', 'dashboard/applications/manage/overview')->name('overview');
         Route::inertia('deployments', 'dashboard/applications/manage/deployments')->name('deployments');
         Route::inertia('commands', 'dashboard/applications/manage/commands')->name('commands');

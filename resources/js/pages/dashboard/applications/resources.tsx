@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 import { Database } from 'lucide-react';
-import AppLayout from '@/layouts/app-layout';
 import ApplicationsTopNav from './components/top-nav';
 
 export default function ApplicationsResources() {
@@ -38,5 +37,4 @@ ApplicationsResources.layout = (props: any) => ({
             href: '#',
         },
     ],
-    children: (page: React.ReactNode) => <AppLayout>{page}</AppLayout>,
 });

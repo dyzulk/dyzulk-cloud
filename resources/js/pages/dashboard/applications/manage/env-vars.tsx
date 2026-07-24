@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import ApplicationLayout from '@/layouts/app/application-layout';
+import AppLayout from '@/layouts/app-layout';
 
 export default function EnvVars() {
     const [showSecrets, setShowSecrets] = useState(false);
@@ -90,28 +91,32 @@ export default function EnvVars() {
     );
 }
 
-EnvVars.layout = (props: any) => ({
-    breadcrumbs: [
+EnvVars.layout = (props: any) => [
+    [
+        AppLayout,
         {
-            title: 'Dashboard',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
-        },
-        {
-            title: 'Applications',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
-        },
-        {
-            title: 'Environment Variables',
-            href: '#',
+            breadcrumbs: [
+                {
+                    title: 'Dashboard',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
+                },
+                {
+                    title: 'Applications',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
+                },
+                {
+                    title: 'Environment Variables',
+                    href: '#',
+                },
+            ],
         },
     ],
-    children: (page: React.ReactNode) => (
-        <ApplicationLayout
-            applicationName="laravel-starter"
-            environment="production"
-            status="live"
-        >
-            {page}
-        </ApplicationLayout>
-    ),
-});
+    [
+        ApplicationLayout,
+        {
+            applicationName: 'laravel-starter',
+            environment: 'production',
+            status: 'live',
+        },
+    ],
+];

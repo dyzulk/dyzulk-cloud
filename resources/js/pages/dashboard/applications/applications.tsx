@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import ApplicationsTopNav from './components/top-nav';
 
 type Props = {
@@ -163,5 +162,4 @@ ApplicationsList.layout = (props: any) => ({
             href: '#',
         },
     ],
-    children: (page: React.ReactNode) => <AppLayout>{page}</AppLayout>,
 });

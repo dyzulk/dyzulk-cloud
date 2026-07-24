@@ -1,13 +1,9 @@
 import { usePage } from '@inertiajs/react';
 import { GitBranch, Globe, RefreshCw, Rocket } from 'lucide-react';
-import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
-import { AppSidebar } from '@/components/app-sidebar';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { AppLayoutProps } from '@/types';
 import ProjectTopNav from '@/pages/dashboard/applications/components/project-top-nav';
+import type { AppLayoutProps } from '@/types';
 
 type ApplicationLayoutProps = AppLayoutProps & {
     applicationName?: string;
@@ -17,7 +13,6 @@ type ApplicationLayoutProps = AppLayoutProps & {
 
 export default function ApplicationLayout({
     children,
-    breadcrumbs = [],
     applicationName = 'laravel-starter',
     environment = 'production',
     status = 'live',
@@ -67,58 +62,51 @@ export default function ApplicationLayout({
     };
 
     return (
-        <AppShell variant="sidebar">
-            <AppSidebar />
-            <AppContent variant="sidebar" className="overflow-x-hidden">
-                <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                
-                <div className="flex flex-col gap-6 p-6">
-                    {/* Header Banner (Laravel Cloud Style) */}
-                    <div className="flex flex-col justify-between gap-4 border-b border-border/60 pb-5 md:flex-row md:items-center">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2.5">
-                                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                                    {applicationName}
-                                </h1>
-                                <Badge variant="secondary" className="font-mono text-xs">
-                                    {environment}
-                                </Badge>
-                                {getStatusBadge()}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                    <GitBranch className="h-3.5 w-3.5" />
-                                    dyzulk/{applicationName}:main
-                                </span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1">
-                                    <Globe className="h-3.5 w-3.5" />
-                                    Asia Pacific (Singapore)
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" className="gap-1.5">
-                                <RefreshCw className="h-3.5 w-3.5" />
-                                Redeploy
-                            </Button>
-                            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
-                                <Rocket className="h-3.5 w-3.5" />
-                                Deploy
-                            </Button>
-                        </div>
+        <div className="flex flex-col gap-6 p-6">
+            {/* Header Banner (Laravel Cloud Style) */}
+            <div className="flex flex-col justify-between gap-4 border-b border-border/60 pb-5 md:flex-row md:items-center">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2.5">
+                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                            {applicationName}
+                        </h1>
+                        <Badge variant="secondary" className="font-mono text-xs">
+                            {environment}
+                        </Badge>
+                        {getStatusBadge()}
                     </div>
-
-                    {/* Project Top Nav */}
-                    <ProjectTopNav applicationName={applicationName} activeTab={activeTab} />
-
-                    {/* Page Content */}
-                    <div className="space-y-6">
-                        {children}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                            <GitBranch className="h-3.5 w-3.5" />
+                            dyzulk/{applicationName}:main
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                            <Globe className="h-3.5 w-3.5" />
+                            Asia Pacific (Singapore)
+                        </span>
                     </div>
                 </div>
-            </AppContent>
-        </AppShell>
+
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        Redeploy
+                    </Button>
+                    <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
+                        <Rocket className="h-3.5 w-3.5" />
+                        Deploy
+                    </Button>
+                </div>
+            </div>
+
+            {/* Project Top Nav */}
+            <ProjectTopNav applicationName={applicationName} activeTab={activeTab} />
+
+            {/* Page Content */}
+            <div className="space-y-6">
+                {children}
+            </div>
+        </div>
     );
 }

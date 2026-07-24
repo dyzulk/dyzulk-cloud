@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { Activity, Cpu, HardDrive, Network, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ApplicationLayout from '@/layouts/app/application-layout';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Metrics() {
     return (
@@ -105,28 +106,32 @@ export default function Metrics() {
     );
 }
 
-Metrics.layout = (props: any) => ({
-    breadcrumbs: [
+Metrics.layout = (props: any) => [
+    [
+        AppLayout,
         {
-            title: 'Dashboard',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
-        },
-        {
-            title: 'Applications',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
-        },
-        {
-            title: 'Metrics',
-            href: '#',
+            breadcrumbs: [
+                {
+                    title: 'Dashboard',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
+                },
+                {
+                    title: 'Applications',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
+                },
+                {
+                    title: 'Metrics',
+                    href: '#',
+                },
+            ],
         },
     ],
-    children: (page: React.ReactNode) => (
-        <ApplicationLayout
-            applicationName="laravel-starter"
-            environment="production"
-            status="live"
-        >
-            {page}
-        </ApplicationLayout>
-    ),
-});
+    [
+        ApplicationLayout,
+        {
+            applicationName: 'laravel-starter',
+            environment: 'production',
+            status: 'live',
+        },
+    ],
+];

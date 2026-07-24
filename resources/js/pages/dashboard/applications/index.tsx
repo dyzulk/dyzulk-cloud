@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 import ApplicationsTopNav from './components/top-nav';
 
 export default function ApplicationsOverview() {
@@ -133,5 +132,4 @@ ApplicationsOverview.layout = (props: any) => ({
             href: '#',
         },
     ],
-    children: (page: React.ReactNode) => <AppLayout>{page}</AppLayout>,
 });

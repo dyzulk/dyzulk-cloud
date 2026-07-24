@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import ApplicationLayout from '@/layouts/app/application-layout';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Settings() {
     return (
@@ -115,28 +116,32 @@ export default function Settings() {
     );
 }
 
-Settings.layout = (props: any) => ({
-    breadcrumbs: [
+Settings.layout = (props: any) => [
+    [
+        AppLayout,
         {
-            title: 'Dashboard',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
-        },
-        {
-            title: 'Applications',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
-        },
-        {
-            title: 'Settings',
-            href: '#',
+            breadcrumbs: [
+                {
+                    title: 'Dashboard',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
+                },
+                {
+                    title: 'Applications',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
+                },
+                {
+                    title: 'Settings',
+                    href: '#',
+                },
+            ],
         },
     ],
-    children: (page: React.ReactNode) => (
-        <ApplicationLayout
-            applicationName="laravel-starter"
-            environment="production"
-            status="live"
-        >
-            {page}
-        </ApplicationLayout>
-    ),
-});
+    [
+        ApplicationLayout,
+        {
+            applicationName: 'laravel-starter',
+            environment: 'production',
+            status: 'live',
+        },
+    ],
+];

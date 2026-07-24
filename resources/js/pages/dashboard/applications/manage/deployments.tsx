@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ApplicationLayout from '@/layouts/app/application-layout';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Deployments() {
     const deploymentsList = [
@@ -121,28 +122,32 @@ export default function Deployments() {
     );
 }
 
-Deployments.layout = (props: any) => ({
-    breadcrumbs: [
+Deployments.layout = (props: any) => [
+    [
+        AppLayout,
         {
-            title: 'Dashboard',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
-        },
-        {
-            title: 'Applications',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
-        },
-        {
-            title: 'Deployments',
-            href: '#',
+            breadcrumbs: [
+                {
+                    title: 'Dashboard',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/dashboard` : '/',
+                },
+                {
+                    title: 'Applications',
+                    href: props.currentTeam ? `/${props.currentTeam.slug}/applications` : '#',
+                },
+                {
+                    title: 'Deployments',
+                    href: '#',
+                },
+            ],
         },
     ],
-    children: (page: React.ReactNode) => (
-        <ApplicationLayout
-            applicationName="laravel-starter"
-            environment="production"
-            status="live"
-        >
-            {page}
-        </ApplicationLayout>
-    ),
-});
+    [
+        ApplicationLayout,
+        {
+            applicationName: 'laravel-starter',
+            environment: 'production',
+            status: 'live',
+        },
+    ],
+];
