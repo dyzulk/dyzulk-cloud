@@ -36,15 +36,36 @@ export default function ApplicationsTopNav({ activeTab, onToggleDemo, viewMode }
                 >
                     Applications
                 </Link>
-                <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
+                <Link
+                    href={`/${teamSlug}/applications/resources`}
+                    className={`transition-colors ${
+                        activeTab === 'resources'
+                            ? 'relative border-b-2 border-primary pb-3 font-semibold text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
                     Resources
-                </span>
-                <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
+                </Link>
+                <Link
+                    href={`/${teamSlug}/applications/usage`}
+                    className={`transition-colors ${
+                        activeTab === 'usage'
+                            ? 'relative border-b-2 border-primary pb-3 font-semibold text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
                     Usage
-                </span>
-                <span className="text-muted-foreground/60 transition-colors hover:text-muted-foreground cursor-not-allowed">
+                </Link>
+                <Link
+                    href={`/${teamSlug}/applications/settings`}
+                    className={`transition-colors ${
+                        activeTab === 'settings'
+                            ? 'relative border-b-2 border-primary pb-3 font-semibold text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
                     Settings
-                </span>
+                </Link>
             </div>
 
             <div className="flex items-center gap-2">
