@@ -3,8 +3,9 @@
 use App\Models\CaCertificate;
 use App\Services\Ssl\CaSetupService;
 use App\Services\Ssl\CertificateRenewalService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('bulkRenewStrategy renews all roots and intermediates including ECC', function () {
     $generator = app(CaSetupService::class);

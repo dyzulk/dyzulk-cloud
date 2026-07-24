@@ -30,7 +30,7 @@ class EmployeeFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
-            'employee_id' => 'EMP-' . fake()->unique()->numerify('####'),
+            'employee_id' => 'EMP-'.fake()->unique()->numerify('####'),
             'department' => fake()->randomElement(OfficeDepartment::cases()),
             'role' => OfficeRole::Staff,
             'is_active' => true,

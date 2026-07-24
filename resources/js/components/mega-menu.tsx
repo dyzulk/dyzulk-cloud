@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { gsap, useGSAP } from '@/lib/gsap';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -7,6 +6,7 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { gsap, useGSAP } from '@/lib/gsap';
 
 const items = [
     {

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { BookOpen, Box, FolderGit2, LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -20,13 +20,15 @@ import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const page = usePage();
-    const dashboardUrl = page.props.currentTeam
-        ? dashboard(page.props.currentTeam.slug)
+    const currentTeam = (page.props as Record<string, any>).currentTeam;
+    const teamSlug = currentTeam?.slug || 'default';
+    const dashboardUrl = currentTeam
+        ? dashboard(currentTeam.slug)
         : '/';
 
-    const sslCertificatesUrl = page.props.currentTeam
+    const sslCertificatesUrl = currentTeam
         ? sslCertificatesIndex.url({
-              current_team: page.props.currentTeam.slug,
+              current_team: currentTeam.slug,
           })
         : '#';
 
@@ -35,6 +37,11 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboardUrl,
             icon: LayoutGrid,
+        },
+        {
+            title: 'Applications',
+            href: `/${teamSlug}/applications/laravel-starter/overview`,
+            icon: Box,
         },
         {
             title: 'SSL Certificates',

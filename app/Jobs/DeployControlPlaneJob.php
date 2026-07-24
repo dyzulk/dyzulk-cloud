@@ -23,11 +23,12 @@ class DeployControlPlaneJob implements ShouldQueue
         $process->setTimeout($this->timeout);
         $process->run();
 
-        if (!$process->isSuccessful()) {
-            Log::error('Deployment FAILED: ' . $process->getErrorOutput());
+        if (! $process->isSuccessful()) {
+            Log::error('Deployment FAILED: '.$process->getErrorOutput());
+
             return;
         }
 
-        Log::info('Deployment SUCCESS: ' . $process->getOutput());
+        Log::info('Deployment SUCCESS: '.$process->getOutput());
     }
 }

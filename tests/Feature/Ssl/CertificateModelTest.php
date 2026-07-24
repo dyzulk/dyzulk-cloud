@@ -5,8 +5,10 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Ssl\CaSetupService;
 use App\Services\Ssl\LeafGeneratorService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('certificate model encrypts and decrypts key_content for RSA', function () {
     $setup = app(CaSetupService::class);
@@ -46,7 +48,7 @@ test('certificate model encrypts and decrypts key_content for RSA', function () 
     ]);
 
     // The raw DB value should NOT match the original key (it should be encrypted)
-    $rawDb = \Illuminate\Support\Facades\DB::table('certificates')
+    $rawDb = DB::table('certificates')
         ->where('uuid', $certificate->uuid)
         ->value('key_content');
     expect($rawDb)->not->toBe($result['key']);

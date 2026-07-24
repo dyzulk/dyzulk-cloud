@@ -11,6 +11,7 @@ Route::prefix('{current_team}')
         Route::inertia('dashboard', 'dashboard/index')->name('dashboard');
 
         require __DIR__.'/dashboard/ssl.php';
+        require __DIR__.'/dashboard/applications.php';
     });
 
 // Global settings / teams dashboard routes

@@ -5,11 +5,11 @@ namespace App\Services\Ssl;
 use App\Models\CaCertificate;
 use App\Support\OpenSslUtils;
 use Exception;
-use InvalidArgumentException;
-use RuntimeException;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Handles the initialization of the Certificate Authority (CA) hierarchy.
@@ -35,6 +35,7 @@ class CaSetupService
             $this->setupSpecificCa('root_ecc');
             $this->setupSpecificCa('intermediate_ecc_384');
             $this->setupSpecificCa('intermediate_ecc_256');
+
             return true;
         } catch (Exception $e) {
             Log::error('Failed to setup Hybrid CA', ['error' => $e->getMessage()]);
@@ -54,7 +55,7 @@ class CaSetupService
         $configFile = null;
         try {
             $configFile = OpenSslUtils::createCaConfigFile();
-            
+
             switch ($caType) {
                 case 'root':
                     $rootDn = Config::get('openssl.ca_root', []);
@@ -82,6 +83,7 @@ class CaSetupService
                 default:
                     throw new InvalidArgumentException("Invalid CA Type: {$caType}");
             }
+
             return true;
         } catch (Exception $e) {
             Log::error("Failed to setup {$caType}", ['error' => $e->getMessage()]);
@@ -94,20 +96,20 @@ class CaSetupService
     private function generateIntermediateRsa(string $caType, int $bits, string $configFile): void
     {
         $rootCa = CaCertificate::where('ca_type', 'root')->where('is_latest', true)->first();
-        if (!$rootCa) {
+        if (! $rootCa) {
             throw new RuntimeException('Root RSA CA is not initialized.');
         }
 
         $dn = Config::get("openssl.ca_{$bits}", []);
         $keyOptions = ['private_key_bits' => $bits, 'private_key_type' => OPENSSL_KEYTYPE_RSA, 'config' => $configFile];
-        
+
         $this->createIntermediateCa($dn, $keyOptions, $caType, 'rsa', null, $rootCa);
     }
 
     private function generateIntermediateEcc(string $caType, string $curveName, string $configFile): void
     {
         $rootCa = CaCertificate::where('ca_type', 'root_ecc')->where('is_latest', true)->first();
-        if (!$rootCa) {
+        if (! $rootCa) {
             throw new RuntimeException('Root ECC CA is not initialized.');
         }
 
@@ -118,8 +120,6 @@ class CaSetupService
 
         $this->createIntermediateCa($dn, $keyOptions, $caType, 'ecc', $curveName, $rootCa);
     }
-
-
 
     /**
      * Create and store a Root CA

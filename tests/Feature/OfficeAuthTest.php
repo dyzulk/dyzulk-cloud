@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Employee;
+use App\Models\User;
 
 test('office login screen can be rendered', function () {
     $response = $this->get(route('office.login'));
@@ -77,7 +78,7 @@ test('inactive employees cannot access the office dashboard', function () {
 });
 
 test('public users cannot access the office dashboard', function () {
-    $user = \App\Models\User::factory()->create();
+    $user = User::factory()->create();
 
     $response = $this->actingAs($user, 'web')
         ->get(route('office.dashboard'));

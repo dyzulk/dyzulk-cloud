@@ -19,4 +19,3 @@ Route::prefix('webhooks')
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
-

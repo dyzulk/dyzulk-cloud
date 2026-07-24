@@ -2,8 +2,9 @@
 
 use App\Services\Ssl\CaSetupService;
 use App\Services\Ssl\LeafGeneratorService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('generateLeaf creates a valid RSA leaf certificate', function () {
     $setupService = app(CaSetupService::class);

@@ -141,9 +141,9 @@ class LeafGeneratorService
 
             // Need to pass config to pkey_new on Windows
             $privKey = openssl_pkey_new($csrOptions);
-            
+
             if (! $privKey) {
-                throw new Exception('Failed to generate private key: ' . openssl_error_string());
+                throw new Exception('Failed to generate private key: '.openssl_error_string());
             }
 
             $csr = openssl_csr_new($dn, $privKey, $csrOptions);

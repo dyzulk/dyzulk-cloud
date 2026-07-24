@@ -2,8 +2,9 @@
 
 use App\Models\CaCertificate;
 use App\Services\Ssl\CaSetupService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('setupCa creates RSA and ECC root and intermediate CA certificates', function () {
     $service = app(CaSetupService::class);

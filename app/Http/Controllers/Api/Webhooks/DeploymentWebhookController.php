@@ -15,13 +15,13 @@ class DeploymentWebhookController extends Controller
         $payload = $request->getContent();
         $secret = config('services.github.webhook_secret');
 
-        if (!$signature || !$secret) {
+        if (! $signature || ! $secret) {
             return response('Unauthorized', 401);
         }
 
-        $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+        $expectedSignature = 'sha256='.hash_hmac('sha256', $payload, $secret);
 
-        if (!hash_equals($expectedSignature, $signature)) {
+        if (! hash_equals($expectedSignature, $signature)) {
             return response('Forbidden Signature', 403);
         }
 
@@ -30,6 +30,7 @@ class DeploymentWebhookController extends Controller
 
         if ($event === 'push' && ($data['ref'] ?? '') === 'refs/heads/main') {
             DeployControlPlaneJob::dispatch();
+
             return response('Deployment triggered', 202);
         }
 

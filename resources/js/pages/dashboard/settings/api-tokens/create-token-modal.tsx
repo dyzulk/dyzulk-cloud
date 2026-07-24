@@ -58,6 +58,7 @@ export function CreateTokenModal({ children, availableScopes }: Props) {
     return (
         <Dialog open={open} onOpenChange={(newOpen) => {
             setOpen(newOpen);
+
             if (!newOpen) {
                 reset();
                 clearErrors();
