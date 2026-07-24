@@ -97,6 +97,36 @@ class Team extends Model
     }
 
     /**
+     * Get all Git connections for this team.
+     *
+     * @return HasMany<GitConnection, $this>
+     */
+    public function gitConnections(): HasMany
+    {
+        return $this->hasMany(GitConnection::class);
+    }
+
+    /**
+     * Get all applications for this team.
+     *
+     * @return HasMany<Application, $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    /**
+     * Get all database/cache/storage resources for this team.
+     *
+     * @return HasMany<ApplicationResource, $this>
+     */
+    public function applicationResources(): HasMany
+    {
+        return $this->hasMany(ApplicationResource::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
