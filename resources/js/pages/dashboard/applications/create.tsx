@@ -1,5 +1,5 @@
 import { Head, Link, useForm, useHttp, usePage } from '@inertiajs/react';
-import { Check, Folder, Loader2, Search } from 'lucide-react';
+import { ArrowRight, Check, ExternalLink, Folder, Github, Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { store } from '@/actions/App/Http/Controllers/Dashboard/ApplicationController';
 import { repositories, branches } from '@/actions/App/Http/Controllers/Dashboard/Git/GitConnectionController';
@@ -39,6 +39,7 @@ interface Branch {
 
 type Props = {
     gitConnections: GitConnection[];
+    gitHubAppUrl: string;
 };
 
 const computeSizes = [
@@ -54,10 +55,14 @@ const regions = [
     { value: 'Europe (Frankfurt)', label: 'Europe (Frankfurt)' },
 ];
 
-export default function CreateApplication({ gitConnections }: Props) {
+export default function CreateApplication({ gitConnections, gitHubAppUrl }: Props) {
     const page = usePage();
     const currentTeam = (page.props as Record<string, any>).currentTeam;
     const teamSlug = currentTeam?.slug || 'default';
+
+    const installUrl = gitHubAppUrl?.includes('?')
+        ? `${gitHubAppUrl}&state=${teamSlug}`
+        : `${gitHubAppUrl}?state=${teamSlug}`;
 
     const [activeTab, setActiveTab] = useState<'import' | 'template'>('import');
     const [searchQuery, setSearchQuery] = useState('');
@@ -92,7 +97,7 @@ export default function CreateApplication({ gitConnections }: Props) {
         r.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: '',
         display_name: '',
         git_connection_id: activeConnection?.id ?? (null as number | null),
@@ -105,6 +110,7 @@ export default function CreateApplication({ gitConnections }: Props) {
 
     const handleSelectRepo = (repo: Repository) => {
         setSelectedRepo(repo.full_name);
+        setBranchesList([]);
         setData((prev) => ({
             ...prev,
             name: repo.name,
@@ -118,7 +124,6 @@ export default function CreateApplication({ gitConnections }: Props) {
 
     useEffect(() => {
         if (selectedRepo && activeConnection) {
-            setBranchesList([]);
             branchesHttp.get(
                 branches.url(
                     {
@@ -138,8 +143,6 @@ export default function CreateApplication({ gitConnections }: Props) {
                     },
                 }
             );
-        } else {
-            setBranchesList([]);
         }
     }, [selectedRepo]);
 
@@ -191,6 +194,50 @@ export default function CreateApplication({ gitConnections }: Props) {
                 </div>
 
                 {activeTab === 'import' ? (
+                    gitConnections.length === 0 ? (
+                        /* Onboarding Card - No Git Connections */
+                        <Card className="relative overflow-hidden border-border/80 shadow-xs">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-primary/[0.02]" />
+                            <CardContent className="relative flex flex-col items-center gap-6 px-8 py-12">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-foreground/[0.06] ring-1 ring-border/60">
+                                    <Github className="h-8 w-8 text-foreground" />
+                                </div>
+
+                                <div className="space-y-2 text-center">
+                                    <h2 className="text-lg font-bold tracking-tight text-foreground">
+                                        Connect to GitHub
+                                    </h2>
+                                    <p className="mx-auto max-w-md text-xs leading-relaxed text-muted-foreground">
+                                        Connect your team's GitHub organization or account to automatically
+                                        fetch repositories, set up automatic deployments via webhooks, and
+                                        launch your applications.
+                                    </p>
+                                </div>
+
+                                <a
+                                    href={installUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-xs font-semibold text-background shadow-sm transition-all hover:bg-foreground/90 hover:shadow-md"
+                                >
+                                    <Github className="h-4 w-4" />
+                                    Connect GitHub
+                                    <ExternalLink className="h-3.5 w-3.5 opacity-60" />
+                                </a>
+
+                                <p className="text-[10px] text-muted-foreground">
+                                    Already connected?{' '}
+                                    <Link
+                                        href={`/${teamSlug}/settings`}
+                                        className="font-medium text-primary underline underline-offset-2 transition-colors hover:text-primary/80"
+                                    >
+                                        Go to settings
+                                        <ArrowRight className="ml-0.5 inline h-3 w-3" />
+                                    </Link>
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
                     <form onSubmit={submit} className="space-y-6">
                         {/* Repository Selection Card */}
                         <Card className="border-border/80 shadow-xs">
@@ -449,6 +496,7 @@ export default function CreateApplication({ gitConnections }: Props) {
                             </Card>
                         )}
                     </form>
+                    )
                 ) : (
                     <Card className="border-border/80 p-6 text-center shadow-xs">
                         <p className="text-xs text-muted-foreground">

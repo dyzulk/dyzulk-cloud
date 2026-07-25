@@ -92,6 +92,7 @@ class ApplicationController extends Controller
 
         return Inertia::render('dashboard/applications/create', [
             'gitConnections' => $gitConnections,
+            'gitHubAppUrl' => config('services.github.app_url') ?: 'https://github.com/apps/dyzulk-cloud/installations/new',
         ]);
     }
 
