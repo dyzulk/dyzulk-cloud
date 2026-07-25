@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dashboard\ApplicationController;
 use App\Http\Controllers\Dashboard\ApplicationManagementController;
+use App\Http\Controllers\Dashboard\Git\GitConnectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::name('applications.')->group(function () {
@@ -12,6 +13,11 @@ Route::name('applications.')->group(function () {
     Route::get('applications/settings', [ApplicationController::class, 'settings'])->name('settings');
     Route::get('applications/create', [ApplicationController::class, 'create'])->name('create');
     Route::post('applications', [ApplicationController::class, 'store'])->name('store');
+
+    Route::get('git/connections/{connection}/repositories', [GitConnectionController::class, 'repositories'])
+        ->name('git.connections.repositories');
+    Route::get('git/connections/{connection}/branches', [GitConnectionController::class, 'branches'])
+        ->name('git.connections.branches');
 
     Route::prefix('applications/{application}')->name('manage.')->group(function () {
         Route::get('overview', [ApplicationManagementController::class, 'overview'])->name('overview');

@@ -1,7 +1,8 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, useHttp, usePage } from '@inertiajs/react';
 import { Check, Folder, Loader2, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { store } from '@/actions/App/Http/Controllers/Dashboard/ApplicationController';
+import { repositories, branches } from '@/actions/App/Http/Controllers/Dashboard/Git/GitConnectionController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,20 +26,20 @@ interface GitConnection {
     repository_selection: string;
 }
 
+interface Repository {
+    id: number | string;
+    name: string;
+    full_name: string;
+    updated_at: string;
+}
+
+interface Branch {
+    name: string;
+}
+
 type Props = {
     gitConnections: GitConnection[];
 };
-
-const repositories = [
-    { name: 'dyzulk-cloud', updated: '9 hours ago' },
-    { name: 'openspeedtest-vite', updated: '18 days ago' },
-    { name: 'openspeedtest-vite-react', updated: '23 days ago' },
-    { name: 'speedtest', updated: '24 days ago' },
-    { name: 'openspeedtest-react', updated: '24 days ago' },
-    { name: 'goxstream-hls-converter', updated: 'a month ago' },
-    { name: 'imgix-cli-unofficial', updated: 'a month ago' },
-    { name: 'laravel-starter', updated: 'recently' },
-];
 
 const computeSizes = [
     { value: 'Flex 512 MiB', label: 'Flex 512 MiB' },
@@ -61,12 +62,34 @@ export default function CreateApplication({ gitConnections }: Props) {
     const [activeTab, setActiveTab] = useState<'import' | 'template'>('import');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+    const [reposList, setReposList] = useState<Repository[]>([]);
+    const [branchesList, setBranchesList] = useState<Branch[]>([]);
 
     const activeConnection = gitConnections.length > 0 ? gitConnections[0] : null;
     const accountName = activeConnection?.provider_account_name || 'dyzulk';
 
-    const filteredRepos = repositories.filter((r) =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    const reposHttp = useHttp({});
+    const branchesHttp = useHttp({});
+
+    useEffect(() => {
+        if (activeConnection) {
+            reposHttp.get(
+                repositories.url({
+                    current_team: teamSlug,
+                    connection: activeConnection.id,
+                }),
+                {
+                    onSuccess: (response: any) => {
+                        setReposList(response.repositories || []);
+                    },
+                }
+            );
+        }
+    }, [activeConnection?.id]);
+
+    const filteredRepos = reposList.filter((r) =>
+        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -75,22 +98,48 @@ export default function CreateApplication({ gitConnections }: Props) {
         git_connection_id: activeConnection?.id ?? (null as number | null),
         git_repository_id: '' as string,
         repository_name: '',
-        branch: 'main',
+        branch: '',
         compute_size: 'Flex 512 MiB',
         region: 'Asia Pacific (Singapore)',
     });
 
+    const handleSelectRepo = (repo: Repository) => {
+        setSelectedRepo(repo.full_name);
+        setData((prev) => ({
+            ...prev,
+            name: repo.name,
+            display_name: repo.name,
+            repository_name: repo.full_name,
+            git_repository_id: String(repo.id),
+            git_connection_id: activeConnection?.id ?? null,
+            branch: '',
+        }));
+    };
+
     useEffect(() => {
-        if (selectedRepo) {
-            const repoSlug = selectedRepo.split('/').pop() || '';
-            setData((prev) => ({
-                ...prev,
-                name: repoSlug,
-                display_name: repoSlug,
-                repository_name: selectedRepo,
-                git_repository_id: String(Math.floor(Math.random() * 900000) + 100000),
-                git_connection_id: activeConnection?.id ?? null,
-            }));
+        if (selectedRepo && activeConnection) {
+            setBranchesList([]);
+            branchesHttp.get(
+                branches.url(
+                    {
+                        current_team: teamSlug,
+                        connection: activeConnection.id,
+                    },
+                    {
+                        query: { repository: selectedRepo }
+                    }
+                ),
+                {
+                    onSuccess: (response: any) => {
+                        const list = response.branches || [];
+                        setBranchesList(list);
+                        const hasMain = list.some((b: Branch) => b.name === 'main');
+                        setData('branch', hasMain ? 'main' : (list[0]?.name ?? ''));
+                    },
+                }
+            );
+        } else {
+            setBranchesList([]);
         }
     }, [selectedRepo]);
 
@@ -184,37 +233,43 @@ export default function CreateApplication({ gitConnections }: Props) {
 
                                 {/* Repository Selector List */}
                                 <div className="max-h-64 divide-y divide-border/40 overflow-y-auto rounded-lg border border-border/80">
-                                    {filteredRepos.map((repo) => (
-                                        <div
-                                            key={repo.name}
-                                            onClick={() =>
-                                                setSelectedRepo(`${accountName}/${repo.name}`)
-                                            }
-                                            className={`flex cursor-pointer items-center justify-between p-3 transition-colors hover:bg-muted/40 ${
-                                                selectedRepo === `${accountName}/${repo.name}`
-                                                    ? 'bg-primary/5'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <div className="flex items-center space-x-2.5">
-                                                <Folder className="h-4 w-4 text-muted-foreground" />
-                                                <span className="text-xs font-semibold text-foreground">
-                                                    {accountName}/{repo.name}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                                                <span>{repo.updated}</span>
-                                                {selectedRepo ===
-                                                    `${accountName}/${repo.name}` && (
-                                                    <Check className="h-4 w-4 text-primary" />
-                                                )}
-                                            </div>
+                                    {reposHttp.processing ? (
+                                        <div className="flex flex-col items-center justify-center p-8 space-y-2">
+                                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                            <span className="text-xs text-muted-foreground">Loading repositories...</span>
                                         </div>
-                                    ))}
-                                    {filteredRepos.length === 0 && (
-                                        <div className="p-6 text-center text-xs text-muted-foreground">
-                                            No repositories match your search.
-                                        </div>
+                                    ) : (
+                                        <>
+                                            {filteredRepos.map((repo) => (
+                                                <div
+                                                    key={repo.id}
+                                                    onClick={() => handleSelectRepo(repo)}
+                                                    className={`flex cursor-pointer items-center justify-between p-3 transition-colors hover:bg-muted/40 ${
+                                                        selectedRepo === repo.full_name
+                                                            ? 'bg-primary/5'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center space-x-2.5">
+                                                        <Folder className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="text-xs font-semibold text-foreground">
+                                                            {repo.full_name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-3 text-xs text-muted-foreground">
+                                                        <span>{repo.updated_at ? new Date(repo.updated_at).toLocaleDateString() : ''}</span>
+                                                        {selectedRepo === repo.full_name && (
+                                                            <Check className="h-4 w-4 text-primary" />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {filteredRepos.length === 0 && (
+                                                <div className="p-6 text-center text-xs text-muted-foreground">
+                                                    No repositories match your search.
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </CardContent>
@@ -284,14 +339,29 @@ export default function CreateApplication({ gitConnections }: Props) {
                                         <Select
                                             value={data.branch}
                                             onValueChange={(val) => setData('branch', val)}
+                                            disabled={branchesHttp.processing}
                                         >
                                             <SelectTrigger id="branch" className="text-xs">
-                                                <SelectValue placeholder="Select branch" />
+                                                {branchesHttp.processing ? (
+                                                    <span className="flex items-center gap-2">
+                                                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                                        Loading branches...
+                                                    </span>
+                                                ) : (
+                                                    <SelectValue placeholder="Select branch" />
+                                                )}
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="main">main</SelectItem>
-                                                <SelectItem value="develop">develop</SelectItem>
-                                                <SelectItem value="staging">staging</SelectItem>
+                                                {branchesList.map((branch) => (
+                                                    <SelectItem key={branch.name} value={branch.name}>
+                                                        {branch.name}
+                                                    </SelectItem>
+                                                ))}
+                                                {branchesList.length === 0 && !branchesHttp.processing && (
+                                                    <SelectItem value="main" disabled>
+                                                        No branches found
+                                                    </SelectItem>
+                                                )}
                                             </SelectContent>
                                         </Select>
                                         <InputError message={errors.branch} />

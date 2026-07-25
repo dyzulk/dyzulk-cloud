@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\Git\GitHubCallbackController;
 use App\Http\Controllers\Dashboard\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,11 @@ Route::prefix('{current_team}')
 Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/dashboard/settings.php';
     require __DIR__.'/dashboard/teams.php';
+
+    Route::prefix('oauth/git')->group(function () {
+        Route::get('/github/callback', GitHubCallbackController::class)
+            ->name('oauth.git.github.callback');
+    });
 });
 
 Route::middleware(['auth'])->group(function () {
