@@ -1,49 +1,49 @@
-# Panduan CLI Pembuatan LXC dan VM di Proxmox VE
+# Proxmox VE CLI Guide: Creating LXCs and VMs
 
-Dokumen ini berisi kumpulan perintah CLI (Command Line Interface) Proxmox VE untuk membuat LXC (menggunakan `pct`) dan VM (menggunakan `qm` dengan metode Cloud-Init) langsung melalui koneksi SSH ke server Proxmox Anda.
+This document contains a collection of Proxmox VE CLI (Command Line Interface) commands to create LXCs (using `pct`) and VMs (using `qm` with the Cloud-Init method) directly via an SSH connection to your Proxmox server.
 
 > [!NOTE]
-> Pastikan Anda telah masuk ke shell root Proxmox VE melalui SSH sebelum menjalankan perintah-perintah di bawah ini. Sesuaikan ID VM/LXC (`100`, `101`, dst.) serta nama storage (`local`, `local-lvm`, `ssd2`, dll.) dengan konfigurasi storage di PVE Anda.
+> Ensure you have logged into the Proxmox VE root shell via SSH before running the commands below. Adjust the VM/LXC IDs (`100`, `101`, etc.) and storage names (`local`, `local-lvm`, `ssd2`, etc.) to match your PVE storage configuration.
 
 ---
 
-## 1. Persiapan Unduh Template & Image
+## 1. Preparing and Downloading Templates & Images
 
-Sebelum membuat LXC dan VM, unduh template LXC (Ubuntu/Debian) dan image Cloud-Init untuk VM.
+Before creating LXCs and VMs, download the LXC templates (Ubuntu/Debian) and Cloud-Init images for VMs.
 
 > [!WARNING]
-> Jika Anda mendapatkan error `template: no such template` saat mencoba mengunduh, hal ini disebabkan karena nama berkas rilis template di server repositori Proxmox telah berubah (misal revisi `-1` berubah menjadi `-2` dst). 
-> Ikuti cara di bawah untuk mencari nama template yang tepat sebelum mengunduh.
+> If you encounter a `template: no such template` error while downloading, this is because the release template filename on the Proxmox repository server has changed (e.g., revision `-1` changed to `-2`, etc.). 
+> Follow the method below to search for the exact template name before downloading.
 
 ```bash
-# 1. Update daftar template Proxmox
+# 1. Update the Proxmox template list
 pveam update
 
-# 2. Cari nama tepat template Ubuntu yang tersedia di repositori
+# 2. Search for the exact Ubuntu template name available in the repository
 pveam available | grep ubuntu
 
-# Contoh keluaran:
+# Example output:
 # system          ubuntu-22.04-standard_22.04-1_amd64.tar.zst
-# system          ubuntu-24.04-standard_24.04-1_amd64.tar.zst   <-- Ambil nama ini
+# system          ubuntu-24.04-standard_24.04-1_amd64.tar.zst   <-- Use this name
 
-# 3. Unduh template pilihan Anda menggunakan nama tepat hasil pencarian di atas
-# (Ganti "ubuntu-24.04-standard_24.04-1_amd64.tar.zst" dengan nama yang muncul pada PVE Anda)
+# 3. Download the chosen template using the exact name found above
+# (Replace "ubuntu-24.04-standard_24.04-1_amd64.tar.zst" with the name shown on your PVE)
 pveam download local ubuntu-24.04-standard_24.04-1_amd64.tar.zst
 
-# 4. Pindah ke direktori penyimpanan ISO/Image untuk mengunduh Cloud-Init image untuk VM
+# 4. Navigate to the ISO/Image storage directory to download the Cloud-Init image for the VM
 cd /var/lib/vz/template/iso
 wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
 ```
 
 ---
 
-## 2. Pembuatan LXC (Proxmox Container)
+## 2. Creating LXCs (Proxmox Containers)
 
-LXC digunakan untuk aplikasi yang tidak membutuhkan isolasi kernel penuh, seperti Control Plane dan Ingress Router.
+LXCs are used for applications that do not require full kernel isolation, such as the Control Plane and Ingress Router.
 
 ### LXC 1: Control Plane & Database (ID: 1000)
-*   **Spesifikasi**: 2 Core, 4 GB RAM, 20 GB Disk
-*   **Perintah Pembuatan**:
+* **Specifications**: 2 Cores, 4 GB RAM, 20 GB Disk
+* **Creation Command**:
 
 ```bash
 pct create 1000 local:vztmpl/ubuntu-24.04-standard_24.04-1_amd64.tar.zst \
@@ -61,8 +61,8 @@ pct create 1000 local:vztmpl/ubuntu-24.04-standard_24.04-1_amd64.tar.zst \
 ```
 
 ### LXC 2: Ingress & SSL Router (ID: 1100)
-*   **Spesifikasi**: 1 Core, 2 GB RAM, 10 GB Disk
-*   **Perintah Pembuatan**:
+* **Specifications**: 1 Core, 2 GB RAM, 10 GB Disk
+* **Creation Command**:
 
 ```bash
 pct create 1100 local:vztmpl/ubuntu-24.04-standard_24.04-1_amd64.tar.zst \
@@ -80,56 +80,56 @@ pct create 1100 local:vztmpl/ubuntu-24.04-standard_24.04-1_amd64.tar.zst \
 ```
 
 > [!TIP]
-> Parameter `-ssh-public-keys ~/.ssh/authorized_keys` secara otomatis menyalin kunci SSH publik Anda dari server Proxmox ke dalam container LXC baru, sehingga Anda bisa langsung masuk via SSH tanpa password.
+> The `-ssh-public-keys ~/.ssh/authorized_keys` parameter automatically copies your public SSH key from the Proxmox server into the new LXC container, allowing you to log in via SSH without a password.
 
 ---
 
-## 3. Pembuatan VM Menggunakan Cloud-Init (Untuk Worker Nodes)
+## 3. Creating VMs Using Cloud-Init (For Worker Nodes)
 
-Untuk Worker Nodes, sangat disarankan menggunakan VM penuh (KVM) demi keamanan kontainerisasi (Docker/Runner). Cara tercepat dan terefisien adalah membuat satu VM Template menggunakan image Cloud-Init, lalu meng-klon template tersebut untuk Worker 1 dan Worker 2.
+For Worker Nodes, it is highly recommended to use full Virtual Machines (KVM) for containerization security (Docker/Runner). The fastest and most efficient way is to create one VM Template using a Cloud-Init image, and then clone this template for Worker 1 and Worker 2.
 
-### Langkah A: Membuat VM Template Cloud-Init (ID: 9000)
+### Step A: Creating the Cloud-Init VM Template (ID: 9000)
 
-Jalankan rangkaian perintah berikut untuk membuat base template:
+Run the following sequence of commands to create the base template:
 
 ```bash
-# 1. Buat VM dengan spesifikasi dasar
+# 1. Create a VM with basic specifications
 qm create 9000 --name ubuntu-cloudinit-template --memory 2048 --cores 2 --cpu host --net0 virtio,bridge=vmbr0
 
-# 2. Impor disk dari image Cloud-Init yang sudah diunduh ke storage local-lvm
+# 2. Import the disk from the downloaded Cloud-Init image to local-lvm storage
 qm importdisk 9000 /var/lib/vz/template/iso/noble-server-cloudimg-amd64.img local-lvm
 
-# 3. Hubungkan disk yang diimpor ke interface scsihw virtio SCSI
+# 3. Attach the imported disk to the virtio SCSI controller
 qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0,discard=on,ssd=1
 
-# 4. Tambahkan drive Cloud-Init
+# 4. Add the Cloud-Init drive
 qm set 9000 --ide2 local-lvm:cloudinit
 
-# 5. Atur boot order ke disk utama
+# 5. Set the boot order to the main disk
 qm set 9000 --boot order=scsi0
 
-# 6. Tambahkan serial console (diperlukan untuk cloud-init)
+# 6. Add a serial console (required for cloud-init)
 qm set 9000 --serial0 socket --vga serial0
 
-# 7. Konfigurasi awal Cloud-Init (User, SSH Key, dan IP DHCP)
+# 7. Configure Cloud-Init defaults (User, SSH Key, and DHCP IP)
 qm set 9000 --ciuser ubuntu
 qm set 9000 --sshkeys ~/.ssh/authorized_keys
 qm set 9000 --ipconfig0 ip=dhcp
 
-# 8. Ubah VM menjadi Template
+# 8. Convert the VM into a Template
 qm template 9000
 ```
 
-### Langkah B: Kloning Template Menjadi Worker Nodes
+### Step B: Cloning the Template into Worker Nodes
 
-Setelah template ID `9000` berhasil dibuat, Anda cukup melakukan clone cepat (linked clone) untuk menghemat waktu dan penyimpanan.
+Once template ID `9000` is created, you can perform a quick clone (linked clone) to save time and storage.
 
 #### VM Worker Node 1 (ID: 102)
-*   **Kloning**:
+* **Cloning**:
     ```bash
     qm clone 9000 102 --name paas-worker-1 --full 0
     ```
-*   **Sesuaikan Resource (4 Core, 8 GB RAM, 40 GB Disk)**:
+* **Adjust Resources (4 Cores, 8 GB RAM, 40 GB Disk)**:
     ```bash
     qm set 102 --cores 4 --memory 8192
     qm resize 102 scsi0 +20G
@@ -137,11 +137,11 @@ Setelah template ID `9000` berhasil dibuat, Anda cukup melakukan clone cepat (li
     ```
 
 #### VM Worker Node 2 (ID: 103)
-*   **Kloning**:
+* **Cloning**:
     ```bash
     qm clone 9000 103 --name paas-worker-2 --full 0
     ```
-*   **Sesuaikan Resource (4 Core, 8 GB RAM, 40 GB Disk)**:
+* **Adjust Resources (4 Cores, 8 GB RAM, 40 GB Disk)**:
     ```bash
     qm set 103 --cores 4 --memory 8192
     qm resize 103 scsi0 +20G
@@ -150,14 +150,14 @@ Setelah template ID `9000` berhasil dibuat, Anda cukup melakukan clone cepat (li
 
 ---
 
-## 4. Perintah Dasar Manajemen CLI Proxmox
+## 4. Basic Proxmox CLI Management Commands
 
-Berikut beberapa perintah cepat untuk memantau dan mengelola VM/LXC yang baru dibuat:
+Here are some quick commands to monitor and manage your newly created VMs/LXCs:
 
-| Aksi | Perintah LXC (Container) | Perintah VM (Virtual Machine) |
+| Action | LXC (Container) Command | VM (Virtual Machine) Command |
 | :--- | :--- | :--- |
-| **Menyalakan** | `pct start <ID>` | `qm start <ID>` |
-| **Mematikan** | `pct stop <ID>` | `qm shutdown <ID>` (atau `qm stop <ID>`) |
-| **Melihat Status** | `pct status <ID>` | `qm status <ID>` |
-| **Masuk ke Shell** | `pct enter <ID>` | `qm terminal <ID>` |
-| **Menghapus** | `pct destroy <ID>` | `qm destroy <ID>` |
+| **Start** | `pct start <ID>` | `qm start <ID>` |
+| **Stop** | `pct stop <ID>` | `qm shutdown <ID>` (or `qm stop <ID>`) |
+| **Check Status** | `pct status <ID>` | `qm status <ID>` |
+| **Enter Shell** | `pct enter <ID>` | `qm terminal <ID>` |
+| **Destroy** | `pct destroy <ID>` | `qm destroy <ID>` |

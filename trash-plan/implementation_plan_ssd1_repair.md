@@ -1,57 +1,57 @@
-# Rencana Diagnosis & Tindakan: Perbaikan drive sda (ssd1)
+# Diagnosis & Action Plan: Repairing sda Drive (ssd1)
 
-Dokumen ini berisi analisis hasil diagnosis fisik serta rencana langkah penanganan untuk memulihkan atau mendiagnosis ulang SSD `sda` (`ssd1`) yang saat ini mengalami kegagalan baca-tulis (I/O Error).
+This document contains the analysis of the physical diagnostic results and the action plan to recover or re-diagnose the `sda` SSD (`ssd1`), which is currently experiencing read-write failures (I/O Errors).
 
 ---
 
-## Analisis Masalah Saat Ini
+## Current Issue Analysis
 
-Dari hasil diagnosis awal melalui kernel log (`dmesg`), ditemukan indikasi masalah berikut:
+From the initial diagnostic results via kernel logs (`dmesg`), the following issues were identified:
 1. **I/O Error & Aborted Command**:
    ```
    I/O error, dev sda, sector 500118020 op 0x0:(READ)
    Buffer I/O error on dev sda1, logical block 500115972, async page read
    Sense Key : Aborted Command
    ```
-   Kernel mengalami kegagalan saat mencoba membaca sektor di area akhir SSD (sektor ~500118020). Pengontrol SSD membatalkan perintah baca setelah menunggu beberapa lama (131 detik).
-2. **filesystem Hilang**: Perintah `blkid /dev/sda1` tidak mengembalikan tanda tangan filesystem (UUID/Type). Ini menandakan tabel filesystem pada partisi tersebut sudah rusak atau tidak terbaca lagi akibat bad sector.
-3. **Status SMART**: Uji kesehatan firmware (`SMART PASSED`) bernilai baik, namun ini hanya verifikasi dasar kontroler SSD dan tidak menjamin fisik sel flash memori bebas dari kerusakan (*bad sectors*).
+   The kernel experienced failures when trying to read sectors at the end of the SSD (sector ~500118020). The SSD controller aborted the read command after waiting for a period of time (131 seconds).
+2. **Missing Filesystem**: The `blkid /dev/sda1` command did not return any filesystem signature (UUID/Type). This indicates that the filesystem table on the partition is corrupted or unreadable due to bad sectors.
+3. **SMART Status**: The firmware health check (`SMART PASSED`) is reported as good, but this only verifies the basic functionality of the SSD controller and does not guarantee that the physical flash memory cells are free of damage (bad sectors).
 
 ---
 
-## Rencana Langkah Kerja
+## Action Plan
 
-Untuk menentukan apakah SSD ini masih layak digunakan atau harus diganti, berikut adalah langkah investigasi terstruktur:
+To determine whether this SSD is still usable or must be replaced, the following structured investigation steps should be taken:
 
-### Langkah 1: Pemeriksaan Fisik Koneksi (Langkah Terpenting)
-Seringkali error `Aborted Command` dan I/O error disebabkan oleh **kabel data SATA yang rusak, longgar, atau port SATA pada motherboard yang kotor/bermasalah**.
-*   **Tindakan**: Matikan server homelab Anda, cabut kabel SATA SSD `sda`, bersihkan konektornya, dan pasang kembali ke port SATA yang berbeda menggunakan kabel SATA baru (jika ada).
+### Step 1: Inspect Physical Connections (Most Important Step)
+Often, `Aborted Command` and I/O errors are caused by **damaged or loose SATA data cables, or dirty/faulty SATA ports on the motherboard**.
+* **Action**: Power off your homelab server, unplug the SATA cable of SSD `sda`, clean the connectors, and plug it back into a different SATA port using a new SATA cable (if available).
 
-### Langkah 2: Uji Kesehatan Fisik Mendalam (Bad Block Scan)
-Setelah koneksi fisik dipastikan aman, jalankan pemindaian bad block secara read-only untuk memetakan kerusakan sektor:
+### Step 2: In-Depth Physical Health Test (Bad Block Scan)
+Once the physical connection is confirmed secure, run a read-only bad block scan to map the sector damage:
 ```bash
-# Jalankan badblocks secara read-only (aman untuk data)
+# Run badblocks in read-only mode (safe for data)
 badblocks -v /dev/sda
 ```
-*   *Jika mengeluarkan daftar angka sektor yang rusak*: SSD ini memiliki bad block fisik dan tidak aman untuk menyimpan data VM/LXC karena data akan korup kembali di kemudian hari.
+* *If a list of bad sectors is returned*: The SSD has physical bad blocks and is not safe for storing VM/LXC data, as data corruption will reoccur.
 
-### Langkah 3: Uji Format Ulang (Jika Data Lama Tidak Diperlukan)
-Jika data lama di dalam `ssd1` sudah tidak Anda butuhkan, kita bisa mencoba menghapus tabel partisi lama dan memformat ulang disk untuk melihat apakah kontroler SSD mampu melakukan pemetaan ulang (*remapping*) sektor rusak secara otomatis:
+### Step 3: Re-Formatting Test (If Old Data is Not Needed)
+If you no longer need the old data on `ssd1`, we can try deleting the old partition table and reformatting the disk to see if the SSD controller can automatically map out the bad sectors:
 ```bash
-# 1. Hapus tabel partisi lama dan buat baru (GPT)
+# 1. Clear the old partition table and create a new GPT label
 parted /dev/sda mklabel gpt
 
-# 2. Buat partisi baru menggunakan seluruh kapasitas
+# 2. Create a new partition using the full capacity
 parted -a optimal /dev/sda mkpart primary ext4 0% 100%
 
-# 3. Format dengan filesystem ext4
+# 3. Format with the ext4 filesystem
 mkfs.ext4 /dev/sda1
 ```
-*   *Jika proses mkfs.ext4 berhasil tanpa error*: SSD masih bisa dicoba untuk digunakan kembali.
-*   *Jika proses mkfs.ext4 macet/gagal*: SSD mengalami kerusakan sel flash permanen.
+* *If mkfs.ext4 completes successfully without errors*: The SSD can be tested for reuse.
+* *If mkfs.ext4 hangs or fails*: The SSD has permanent flash memory cell damage.
 
 ---
 
-## Rekomendasi Akhir
+## Final Recommendation
 > [!CAUTION]
-> Menggunakan SSD yang memiliki *bad sector* untuk penyimpanan Virtual Machine (PaaS/Database) sangat berisiko tinggi. Jika Langkah 2 menemukan bad blocks atau Langkah 3 gagal, solusi terbaik dan paling aman adalah **mengganti SSD tersebut dengan drive baru** demi kestabilan server homelab Anda.
+> Using an SSD with bad sectors for Virtual Machine storage (PaaS/Database) is highly risky. If Step 2 finds bad blocks or Step 3 fails, the best and safest solution is to **replace the SSD with a new drive** to ensure the stability of your homelab server.

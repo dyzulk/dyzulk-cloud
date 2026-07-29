@@ -1,22 +1,22 @@
-# Laporan Penyelesaian: Pembersihan VM dengan Storage ssd1
+# Completion Report: VM Cleanup on ssd1 Storage
 
-Proses pembersihan Virtual Machine (VM) yang merujuk ke storage `ssd1` yang rusak telah selesai dilaksanakan.
+The cleanup process for Virtual Machines (VMs) referencing the broken `ssd1` storage has been successfully completed.
 
 ---
 
-## Ringkasan Aktivitas yang Selesai
+## Summary of Completed Activities
 
-### 1. Penghapusan VM Yatim (Orphaned VMs)
+### 1. Removal of Orphaned VMs
 
-| ID VM | Nama VM | OS | Storage Asal | Status Eksekusi |
+| VM ID | VM Name | OS | Source Storage | Execution Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **400** | `MikroTik7-Central` | MikroTik x86 | `ssd1` (Rusak) | **Berhasil Dihapus** |
-| **401** | `MikroTik7-Klien` | MikroTik x86 | `ssd1` (Rusak) | **Berhasil Dihapus** |
+| **400** | `MikroTik7-Central` | MikroTik x86 | `ssd1` (Broken) | **Successfully Deleted** |
+| **401** | `MikroTik7-Klien` | MikroTik x86 | `ssd1` (Broken) | **Successfully Deleted** |
 
-*Catatan Teknis*: Karena storage `ssd1` sudah tidak aktif/dihapus dari Proxmox, perintah standar `qm destroy` gagal dijalankan. Sebagai alternatif, berkas konfigurasi VM (`/etc/pve/qemu-server/400.conf` & `401.conf`) telah dihapus secara langsung untuk membersihkan daftar VM dari sistem Proxmox.
+*Technical Note*: Since `ssd1` storage is no longer active/has been removed from Proxmox, the standard `qm destroy` command failed to execute. As an alternative, the VM configuration files (`/etc/pve/qemu-server/400.conf` & `401.conf`) were deleted directly to clear the VM list from the Proxmox system.
 
 ---
 
-## Hasil Verifikasi Akhir
-*   Perintah verifikasi `ls` membuktikan berkas `/etc/pve/qemu-server/400.conf` dan `/etc/pve/qemu-server/401.conf` sudah tidak ada di sistem Proxmox.
-*   VM `400` dan `401` telah hilang dari panel navigasi Proxmox VE Anda dan tidak lagi memicu error terkait penyimpanan rusak.
+## Final Verification Results
+* The verification command `ls` confirms that the files `/etc/pve/qemu-server/400.conf` and `/etc/pve/qemu-server/401.conf` no longer exist on the Proxmox system.
+* VMs `400` and `401` have disappeared from your Proxmox VE navigation panel and no longer trigger errors related to broken storage.
