@@ -31,15 +31,15 @@ Tujuan: Membuat kontainer LXC dan VM dasar di Proxmox dengan ID berurutan.
 * [x] Atur alokasi resource hardware (CPU, RAM, Disk) dan IP statis per VM.
 * [x] Nyalakan semua instansi dan verifikasi status aktif (*running*).
 
-### Fase 2: Konfigurasi Jaringan & Isolasi Subnet (VLAN)
-Tujuan: Memastikan setiap subnet terisolasi secara logis menggunakan VLAN tagging pada bridge `vmbr0`.
-* [ ] Konfigurasi VLAN Tag pada Proxmox Host:
-  * VLAN 10: Ingress Subnet (`10.10.10.0/24`)
-  * VLAN 20: Management Subnet (`10.20.20.0/24`)
-  * VLAN 30: Kubernetes Subnet (`10.30.30.0/24`)
-  * VLAN 40: Storage Subnet (`10.40.40.0/24`)
-* [ ] Pastikan tidak ada rute langsung antara VLAN 40 (Database) ke VLAN 10 (Ingress/Internet).
-* [ ] Pastikan VLAN 20 (Laravel Control Plane) memiliki akses penuh ke VLAN 30 (K8s API) dan VLAN 40 (Database).
+### Fase 2: Konfigurasi Jaringan & Isolasi Subnet (VLAN & Routing MikroTik) (Selesai)
+Tujuan: Memastikan setiap subnet terisolasi secara logis menggunakan VLAN tagging pada Proxmox VE dan dikendalikan secara aman menggunakan filter firewall MikroTik (RouterOS v7).
+* [x] Konfigurasi VLAN Tag pada Proxmox Host (VLAN 10, 20, 25, 30, 40) pada interface `vmbr0`.
+* [x] Buat Interface List dan Address List pada MikroTik untuk manajemen subnet PaaS.
+* [x] Konfigurasi aturan Firewall Filter inter-VLAN di MikroTik untuk membatasi akses:
+  * Membatasi subnet Ingress (`10.10.10.0/24`) hanya ke NodePort Traefik di Workers (`30080`, `30443`).
+  * Mengisolasi subnet Database (`10.40.40.0/24`) dari akses langsung internet (pppoe-out1 WAN) dan subnet Ingress.
+  * Mengizinkan rute Management (`10.20.20.0/24`, `10.25.25.0/24`) dan K8s Compute (`10.30.30.0/24`) menuju Database gateway.
+* [x] Verifikasi konektivitas dan aturan isolasi inter-VLAN.
 
 ### Fase 3: Inisialisasi Kubernetes Cluster (K8s kubeadm)
 Tujuan: Membangun klaster Kubernetes standar menggunakan runtime containerd.
