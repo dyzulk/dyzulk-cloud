@@ -41,6 +41,7 @@ Following the standard virtualization allocation, all services run on Debian tem
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **10000** | `paas-control-plane` | Debian | LXC | `10.20.20.10` | Laravel Control Plane (Dashboard, Billing, API, Git webhooks) |
 | **10001** | `paas-ingress-router` | Debian | LXC | `10.10.10.10` | Tunnel Bridge: Runs `cloudflared` client (connects CF Edge to Traefik) |
+| **10002** | `paas-private-registry`| Debian | LXC | `10.20.20.20` | Private Container Registry (Bind Mount on Host HDD 2TB) |
 | **10004** | `paas-db-gateway` | Debian | LXC | `10.40.40.10` | Database Node: PostgreSQL, MariaDB, MySQL (Internal Access Only) |
 | **10005** | `paas-kv-gateway` | Debian | LXC | `10.40.40.20` | Key-Value Node: Redis Cluster / Valkey (Internal Access Only) |
 | **20002** | `paas-k3s-master` | Debian | VM | `10.30.30.10` | K3s Master (Kubernetes Control Plane) |
@@ -54,7 +55,7 @@ Following the standard virtualization allocation, all services run on Debian tem
 
 The network is partitioned into distinct subnets to isolate administrative, compute, and database traffic:
 * **Public Ingress Subnet (`10.10.10.0/24`)**: Contains the Tunnel Bridge. Directly communicates with Cloudflare via outbound tunnel.
-* **Management & Control Subnet (`10.20.20.0/24`)**: Contains the Laravel Control Plane. Orchestrates virtual machines and interacts with the Kubernetes API.
+* **Management & Control Subnet (`10.20.20.0/24`)**: Contains the Laravel Control Plane and Private Container Registry. Orchestrates VMs and handles local image registry access.
 * **Kubernetes Internal Subnet (`10.30.30.0/24`)**: K3s Master, Workers, and Builder nodes.
 * **Storage & Database Subnet (`10.40.40.0/24`)**: Databases and Key-Value stores.
 
@@ -94,6 +95,7 @@ graph TD
 
         subgraph Management_Subnet [Management Network - 10.20.20.0/24]
             ControlPlane[paas-control-plane LXC 10000 - Laravel]
+            Registry[paas-private-registry LXC 10002 - Docker Registry]
         end
 
         subgraph Storage_Subnet [Database & Cache Network - 10.40.40.0/24]
@@ -116,8 +118,9 @@ graph TD
     %% Control Plane Operations
     ControlPlane -->|Deploy Instructions via API| K3s_API
     ControlPlane -->|Trigger Build Job| Builder
-    Builder -->|Push Container Images| ControlPlane
+    Builder -->|Push Container/Wasm Images| Registry
     K3s_API -->|Manage Pod lifecycles| Worker_VMs
+    Worker_VMs -->|Pull Container/Wasm Images| Registry
     Customer_Pod_1 -->|Internal Database Query| DB_Node
     Customer_Pod_1 -->|Internal Cache Operations| KV_Node
 ```
@@ -130,7 +133,7 @@ graph TD
 * **Configuration**: Runs only the `cloudflared` client.
 * **Role**:
   * Establishes outbound connections to Cloudflare Edge.
-  * acts as a network bridge, forwarding all HTTP/HTTPS traffic to the Traefik Ingress Controller service running inside the K3s VM cluster (LoadBalancer/NodePort IP).
+  * Acts as a network bridge, forwarding all HTTP/HTTPS traffic to the Traefik Ingress Controller service running inside the K3s VM cluster (LoadBalancer/NodePort IP).
   * Requires zero routing logic or dynamic reload scripts; its configuration is static.
 * **Network Isolation**: Dual-homed on `10.10.10.0/24` and `10.30.30.0/24`.
 
@@ -142,14 +145,32 @@ graph TD
   * Manages the K3s API by issuing kubectl commands or using the Kubernetes client SDK.
   * Orchestrates builder triggers and monitors deployment health.
 
-### 4.3 Node Master (`paas-k3s-master` - VM 20002)
+### 4.3 Private Container Registry (`paas-private-registry` - LXC 10002)
+* **Configuration**: Runs the official `registry:2` engine.
+* **Role**:
+  * Acts as the local storage for compiled user application Docker and Wasm OCI images.
+  * Allows the Builder (`paas-runner-builder`) to push newly compiled images.
+  * Allows the Worker nodes (`paas-worker-1` and `paas-worker-2`) to pull images via K3s registry config.
+* **Storage Optimization (Bind Mount on Host HDD 2TB)**:
+  * To conserve SSD/NVMe space, the OS of the LXC container runs on the fast SSD pool (LVM), while the heavy image storage directory (`/var/lib/registry`) is mapped using a Proxmox **Bind Mount** pointing to a folder on the 2TB HDD on the Proxmox host.
+  * Proxmox host configuration inside `/etc/pve/lxc/10002.conf`:
+    ```ini
+    mp0: /mnt/pve/hdd2tb/registry-data,mp=/var/lib/registry
+    ```
+  * Permissions fix for unprivileged containers (applied on the Proxmox host):
+    ```bash
+    chown -R 100000:100000 /mnt/pve/hdd2tb/registry-data
+    ```
+  * This keeps data secure on the host's HDD even if the LXC container is corrupted or deleted.
+
+### 4.4 Node Master (`paas-k3s-master` - VM 20002)
 * **Configuration**: Fresh Debian VM, minimal resources (e.g. 2 Cores, 2GB RAM).
 * **Role**:
   * Runs the K3s server control plane.
   * Manages node registrations, pod scheduling, and cluster state (using internal k3s datastore).
   * Exposes the K3s API securely to the Laravel Control Plane container over `10.30.30.0/24`.
 
-### 4.4 Node Runner/Builder (`paas-runner-builder` - VM 20003)
+### 4.5 Node Runner/Builder (`paas-runner-builder` - VM 20003)
 * **Configuration**: Heavy CPU allocation, isolated from worker nodes.
 * **Role**:
   * Acts as a dedicated compilation machine.
@@ -157,10 +178,10 @@ graph TD
     1. Downloads code from the repository.
     2. Runs build scripts (e.g. `npm run build`, `composer install`).
     3. Packages the application into a Docker image or compiles it to a WebAssembly (`.wasm`) target.
-    4. Pushes the compiled image to a private container registry.
+    4. Pushes the compiled image to `paas-private-registry`.
   * Keeps compilation overhead away from worker nodes to ensure stable customer service performance.
 
-### 4.5 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20000 & 20001)
+### 4.6 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20000 & 20001)
 * **Configuration**: Fresh Debian VMs, high RAM allocation, optimized container runtime.
 * **Role**:
   * Runs the `k3s agent`.
@@ -168,19 +189,19 @@ graph TD
   * Runs the Traefik Ingress Controller (deployed as a DaemonSet/Deployment) to dynamically route and load-balance traffic among customer pods inside the node based on Host headers.
   * Strictly stateless and clean: developer toolchains are absent.
 
-### 4.6 Node Databases (`paas-db-gateway` - LXC 10004)
+### 4.7 Node Databases (`paas-db-gateway` - LXC 10004)
 * **Configuration**: PostgreSQL, MariaDB, and MySQL engines.
 * **Role**:
   * Standard database hosting for customers.
   * Internal access only. Integrated with connection poolers (e.g. PgBouncer, ProxySQL) to handle serverless connections from customer pods.
 
-### 4.7 Node Key-Value / Redis (`paas-kv-gateway` - LXC 10005)
+### 4.8 Node Key-Value / Redis (`paas-kv-gateway` - LXC 10005)
 * **Configuration**: Redis / Valkey instances.
 * **Role**:
   * Serving serverless key-value access.
   * Internal access only. Managed via an API gateway to enable HTTP/REST-based access (like Upstash) for serverless applications and Wasm modules.
 
-### 4.8 Cloudflare for SaaS Integration Details
+### 4.9 Cloudflare for SaaS Integration Details
 * **Fallback Origin**: Set to `fallback.dyzulk.cloud` (CNAME pointing to the Tunnel ID).
 * **Custom Domains**: When a user registers `app.customer.com`, the Laravel Control Plane calls the Cloudflare Custom Hostnames API to provision SSL.
 * **Host Header Preservation**: The `cloudflared` client forwards the original `Host: app.customer.com` header through the tunnel to Traefik.
@@ -196,7 +217,7 @@ sequenceDiagram
     actor Developer as Developer / Git Push
     participant Laravel as Laravel Control Plane (LXC 10000)
     participant Builder as Builder Node (VM 20003)
-    participant Registry as Private Registry
+    participant Registry as Private Registry (LXC 10002)
     participant K3s_Master as K3s Master (VM 20002)
     participant Workers as K3s Workers (VM 20000/20001)
     
@@ -226,6 +247,7 @@ sequenceDiagram
 
 1. **Debian Template Creation**: Standardize a Debian cloud-init template on Proxmox for VM and LXC.
 2. **Ingress Setup**: Deploy the `paas-ingress-router` container running only the `cloudflared` client, pointing to the K3s Cluster Ingress IP.
-3. **K3s Initialization**: Install K3s server on `paas-k3s-master` (keeping default Traefik enabled to act as the single local ingress controller).
-4. **Worker Attachment**: Install K3s agents on `paas-worker-1` and `paas-worker-2` and point them to the master.
-5. **Control Plane Wiring**: Configure the Laravel application on `paas-control-plane` to communicate with the K3s cluster via Kubeconfig, and wire up database/Redis provisioning logic.
+3. **Private Registry Setup**: Set up `paas-private-registry` LXC, configure the Bind Mount to the 2TB HDD, fix host directory permissions (`chown 100000:100000`), and run the registry engine.
+4. **K3s Initialization**: Install K3s server on `paas-k3s-master` (keeping default Traefik enabled to act as the single local ingress controller).
+5. **Worker Attachment**: Install K3s agents on `paas-worker-1` and `paas-worker-2` and point them to the master.
+6. **Control Plane Wiring**: Configure the Laravel application on `paas-control-plane` to communicate with the K3s cluster via Kubeconfig, and wire up database/Redis provisioning logic.
