@@ -112,6 +112,7 @@ graph TD
     EdgeProxy -->|Route HTTP/HTTPS| Envoy
     Envoy -->|Pod Traffic Routing| Customer_Pod_1
     Envoy -->|Pod Traffic Routing| Customer_Pod_2
+    EdgeProxy -->|Route Dashboard & Admin API| ControlPlane
 
     %% Dynamic TCP/UDP Stream Routing (e.g. databases, custom protocols)
     EdgeProxy -->|Route TCP/UDP stream| DB_Node
