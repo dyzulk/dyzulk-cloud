@@ -378,9 +378,9 @@ Semua node berjalan di atas Debian 12 (Bookworm). Berikut rekomendasi tipe virtu
 | **10003** | `paas-db-gateway` | LXC | 4 | 8 GB | 100 GB SSD | Database Host (Postgres, MariaDB, MySQL) untuk serverless. |
 | **10004** | `paas-kv-gateway` | LXC | 2 | 4 GB | 20 GB SSD | Redis/Valkey Gateway. |
 | **20000** | `paas-k8s-master` | VM | 2 | 2 GB | 20 GB SSD | Kubernetes Control Plane (kubeadm). Tanpa beban kerja aplikasi customer. |
-| **20001** | `paas-worker-1` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Tempat menjalankan container aplikasi customer. |
-| **20002** | `paas-worker-2` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Replikasi / high-availability worker. |
-| **20003** | `paas-runner-builder` | VM | 4 (Host) | 8 GB | 50 GB SSD | Build Engine. Terisolasi dari cluster agar build CPU-heavy tak mengganggu worker. |
+| **20001** | `paas-runner-builder` | VM | 4 (Host) | 8 GB | 50 GB SSD | Build Engine. Terisolasi dari cluster agar build CPU-heavy tak mengganggu worker. |
+| **20002** | `paas-worker-1` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Tempat menjalankan container aplikasi customer. |
+| **20003** | `paas-worker-2` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Replikasi / high-availability worker. |
 
 ---
 

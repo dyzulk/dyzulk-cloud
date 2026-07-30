@@ -45,9 +45,9 @@ Following the standard virtualization allocation, all services run on Debian tem
 | **10003** | `paas-db-gateway` | Debian | LXC | `10.40.40.10` | Database Node: PostgreSQL, MariaDB, MySQL (Internal Access Only) |
 | **10004** | `paas-kv-gateway` | Debian | LXC | `10.40.40.20` | Key-Value Node: Redis Cluster / Valkey (Internal Access Only) |
 | **20000** | `paas-k8s-master` | Debian | VM | `10.30.30.10` | K8s Master (Kubernetes Control Plane via kubeadm) |
-| **20001** | `paas-worker-1` | Debian | VM | `10.30.30.11` | K8s Worker Node 1 (Runs Traefik Ingress & Customer Pods) |
-| **20002** | `paas-worker-2` | Debian | VM | `10.30.30.12` | K8s Worker Node 2 (Runs Traefik Ingress & Customer Pods) |
-| **20003** | `paas-runner-builder` | Debian | VM | `10.30.30.20` | CI/CD Runner / Builder Node (Docker / Wasm compilation compiler) |
+| **20001** | `paas-runner-builder` | Debian | VM | `10.30.30.20` | CI/CD Runner / Builder Node (Docker / Wasm compilation compiler) |
+| **20002** | `paas-worker-1` | Debian | VM | `10.30.30.11` | K8s Worker Node 1 (Runs Traefik Ingress & Customer Pods) |
+| **20003** | `paas-worker-2` | Debian | VM | `10.30.30.12` | K8s Worker Node 2 (Runs Traefik Ingress & Customer Pods) |
 
 ---
 
@@ -83,10 +83,10 @@ graph TD
             subgraph Master_VM [paas-k8s-master VM 20000]
                 K8s_API[K8s Control Plane]
             end
-            subgraph Builder_VM [paas-runner-builder VM 20003]
+            subgraph Builder_VM [paas-runner-builder VM 20001]
                 Builder[Runner / Docker & Wasm Builder]
             end
-            subgraph Worker_VMs [K8s Workers - VM 20001 & 20002]
+            subgraph Worker_VMs [K8s Workers - VM 20002 & 20003]
                 Traefik[Traefik Ingress Controller]
                 Customer_Pod_1[Customer App Pod 1]
                 Customer_Pod_2[Customer App Pod 2]
@@ -170,7 +170,7 @@ graph TD
   * Manages node registrations, pod scheduling, and cluster state.
   * Exposes the Kubernetes API securely to the Laravel Control Plane container over `10.30.30.0/24`.
 
-### 4.5 Node Runner/Builder (`paas-runner-builder` - VM 20003)
+### 4.5 Node Runner/Builder (`paas-runner-builder` - VM 20001)
 * **Configuration**: Heavy CPU allocation, isolated from worker nodes.
 * **Role**:
   * Acts as a dedicated compilation machine.
@@ -181,7 +181,7 @@ graph TD
     4. Pushes the compiled image to `paas-private-registry`.
   * Keeps compilation overhead away from worker nodes to ensure stable customer service performance.
 
-### 4.6 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20001 & 20002)
+### 4.6 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20002 & 20003)
 * **Configuration**: Fresh Debian VMs, high RAM allocation, optimized container runtime.
 * **Role**:
   * Runs containerd runtime and the `kubelet` agent.
@@ -216,10 +216,10 @@ sequenceDiagram
     autonumber
     actor Developer as Developer / Git Push
     participant Laravel as Laravel Control Plane (LXC 10001)
-    participant Builder as Builder Node (VM 20003)
+    participant Builder as Builder Node (VM 20001)
     participant Registry as Private Registry (LXC 10002)
     participant K8s_Master as K8s Master (VM 20000)
-    participant Workers as K8s Workers (VM 20001/20002)
+    participant Workers as K8s Workers (VM 20002/20003)
     
     Developer ->> Laravel: Git Push (Webhook)
     Laravel ->> Laravel: Validate User Account & Limits
