@@ -108,7 +108,7 @@ Jalankan langkah ini di semua node untuk menambahkan repositori resmi Kubernetes
    sudo apt-mark hold kubelet kubeadm kubectl
    ```
 
-### Langkah 3: Inisialisasi Master Node (`paas-k8s-master` - VM 20002)
+### Langkah 3: Inisialisasi Master Node (`paas-k8s-master` - VM 20000)
 Jalankan perintah inisialisasi berikut hanya di VM Master. Kita menggunakan CIDR Flannel (`10.244.0.0/16`) sebagai jaringan pod:
 
 ```bash
@@ -174,11 +174,11 @@ Karena kita menggunakan Kubernetes standar (bukan K3s), kita harus memasang Ingr
 
 ## 3. Mekanisme Komunikasi Laravel Control Plane dengan K8s
 
-Laravel Control Plane (`paas-control-plane` - LXC 10000) bertindak sebagai otak orkestrasi platform PaaS Anda. Laravel harus dapat berkomunikasi dengan API Server Kubernetes secara aman.
+Laravel Control Plane (`paas-control-plane` - LXC 10001) bertindak sebagai otak orkestrasi platform PaaS Anda. Laravel harus dapat berkomunikasi dengan API Server Kubernetes secara aman.
 
 ```
 +------------------------------------+          +----------------------------------+
-|    paas-control-plane (LXC 10000)  |          |     paas-k8s-master (VM 20002)   |
+|    paas-control-plane (LXC 10001)  |          |     paas-k8s-master (VM 20000)   |
 |                                    |          |                                  |
 |   +----------------------------+   |  HTTPS   |   +--------------------------+   |
 |   |  Laravel Job Orchestrator  |== |=========>|   |   Kubernetes API Server  |   |
@@ -299,7 +299,7 @@ Integrasi Cloudflare Tunnel menjamin klaster Anda tetap aman di belakang Proxmox
                                               |
                                               | (Outbound Secure Tunnel)
                                               v
-                                  [ paas-ingress-router (LXC 10001) ]
+                                  [ paas-ingress-router (LXC 10000) ]
                                   [ cloudflared agent               ]
                                               |
                                               | (Local LAN HTTP Forward)
@@ -312,10 +312,10 @@ Integrasi Cloudflare Tunnel menjamin klaster Anda tetap aman di belakang Proxmox
                                   [ Customer App Pods               ]
 ```
 
-### 1. Konfigurasi `cloudflared` di `paas-ingress-router` (LXC 10001)
+### 1. Konfigurasi `cloudflared` di `paas-ingress-router` (LXC 10000)
 `cloudflared` bertindak sebagai bridge. Dia dipasang di LXC mandiri untuk menjaga performa dan isolasi keamanan.
 
-File konfigurasi `/etc/cloudflared/config.yml` pada LXC 10001:
+File konfigurasi `/etc/cloudflared/config.yml` pada LXC 10000:
 ```yaml
 tunnel: 4a2b9c8d-e1f2-3g4h-5i6j-7k8l9m0n1o2p
 credentials-file: /etc/cloudflared/tunnel-credentials.json
@@ -372,15 +372,15 @@ Semua node berjalan di atas Debian 12 (Bookworm). Berikut rekomendasi tipe virtu
 
 | ID | Nama Node | Tipe | CPU Core | RAM | Storage | Peran & Konfigurasi Utama |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **10000** | `paas-control-plane` | LXC | 2 | 2 GB | 20 GB SSD | Laravel Dashboard, API, Queue Worker. |
-| **10001** | `paas-ingress-router`| LXC | 1 | 1 GB | 10 GB SSD | `cloudflared` client, static bridge. |
+| **10000** | `paas-ingress-router`| LXC | 1 | 1 GB | 10 GB SSD | `cloudflared` client, static bridge. |
+| **10001** | `paas-control-plane` | LXC | 2 | 2 GB | 20 GB SSD | Laravel Dashboard, API, Queue Worker. |
 | **10002** | `paas-private-registry`| LXC | 2 | 2 GB | 20 GB SSD + Bind Mount HDD | Docker Registry: File system bind mount ke HDD 2TB host Proxmox. |
-| **20002** | `paas-k8s-master` | VM | 2 | 2 GB | 20 GB SSD | Kubernetes Control Plane (kubeadm). Tanpa beban kerja aplikasi customer. |
+| **10003** | `paas-db-gateway` | LXC | 4 | 8 GB | 100 GB SSD | Database Host (Postgres, MariaDB, MySQL) untuk serverless. |
+| **10004** | `paas-kv-gateway` | LXC | 2 | 4 GB | 20 GB SSD | Redis/Valkey Gateway. |
+| **20000** | `paas-k8s-master` | VM | 2 | 2 GB | 20 GB SSD | Kubernetes Control Plane (kubeadm). Tanpa beban kerja aplikasi customer. |
+| **20001** | `paas-worker-1` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Tempat menjalankan container aplikasi customer. |
+| **20002** | `paas-worker-2` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Replikasi / high-availability worker. |
 | **20003** | `paas-runner-builder` | VM | 4 (Host) | 8 GB | 50 GB SSD | Build Engine. Terisolasi dari cluster agar build CPU-heavy tak mengganggu worker. |
-| **20000** | `paas-worker-1` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Tempat menjalankan container aplikasi customer. |
-| **20001** | `paas-worker-2` | VM | 4 | 8 GB | 50 GB SSD | K8s Node Worker: Replikasi / high-availability worker. |
-| **10004** | `paas-db-gateway` | LXC | 4 | 8 GB | 100 GB SSD | Database Host (Postgres, MariaDB, MySQL) untuk serverless. |
-| **10005** | `paas-kv-gateway` | LXC | 2 | 4 GB | 20 GB SSD | Redis/Valkey Gateway. |
 
 ---
 
@@ -388,7 +388,7 @@ Semua node berjalan di atas Debian 12 (Bookworm). Berikut rekomendasi tipe virtu
 
 Untuk menjual database dan caching dengan karakteristik "serverless" (kemudahan provisioning cepat, scaling koneksi, dan akses HTTP), berikut adalah arsitektur yang diimplementasikan:
 
-### 1. Database Gateway (`paas-db-gateway` - LXC 10004)
+### 1. Database Gateway (`paas-db-gateway` - LXC 10003)
 Untuk mensimulasikan database serverless seperti Supabase atau Neon:
 * **Connection Pooling (PgBouncer)**:
   Aplikasi serverless / microservices sering melakukan buka-tutup koneksi secara instan, yang dapat membanjiri memory PostgreSQL. Kita pasang **PgBouncer** di depan PostgreSQL pada LXC database. Pod customer terhubung ke PgBouncer (Port 6432) bukan langsung ke Postgres (Port 5432). PgBouncer akan menjaga pool koneksi aktif tetap efisien.
@@ -402,7 +402,7 @@ Untuk mensimulasikan database serverless seperti Supabase atau Neon:
 * **Isolasi Storage**:
   Untuk mencegah satu customer menghabiskan storage SSD database, gunakan kuota disk pada sistem penyimpanan Proxmox (misal: volume ZFS per database) atau batasi ukuran data via parameter konfigurasi PostgreSQL/MySQL.
 
-### 2. Key-Value Gateway (`paas-kv-gateway` - LXC 10005)
+### 2. Key-Value Gateway (`paas-kv-gateway` - LXC 10004)
 Untuk mensimulasikan caching serverless seperti Upstash (REST-based Redis):
 * **HTTP REST Proxy (Webdis / Valkey HTTP)**:
   Banyak web service modern, khususnya yang berjalan di runtime WebAssembly (Wasm) atau Edge Workers, tidak memiliki akses penuh ke raw TCP sockets (hanya bisa melakukan `fetch` HTTP).

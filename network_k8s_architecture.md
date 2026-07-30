@@ -39,15 +39,15 @@ Following the standard virtualization allocation, all services run on Debian tem
 
 | ID | Node Name | OS Template | Type | IP Allocation | Purpose / Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **10000** | `paas-control-plane` | Debian | LXC | `10.20.20.10` | Laravel Control Plane (Dashboard, Billing, API, Git webhooks) |
-| **10001** | `paas-ingress-router` | Debian | LXC | `10.10.10.10` | Tunnel Bridge: Runs `cloudflared` client (connects CF Edge to Traefik) |
+| **10000** | `paas-ingress-router` | Debian | LXC | `10.10.10.10` | Tunnel Bridge: Runs `cloudflared` client (connects CF Edge to Traefik) |
+| **10001** | `paas-control-plane` | Debian | LXC | `10.20.20.10` | Laravel Control Plane (Dashboard, Billing, API, Git webhooks) |
 | **10002** | `paas-private-registry`| Debian | LXC | `10.20.20.20` | Private Container Registry (Bind Mount on Host HDD 2TB) |
-| **10004** | `paas-db-gateway` | Debian | LXC | `10.40.40.10` | Database Node: PostgreSQL, MariaDB, MySQL (Internal Access Only) |
-| **10005** | `paas-kv-gateway` | Debian | LXC | `10.40.40.20` | Key-Value Node: Redis Cluster / Valkey (Internal Access Only) |
-| **20002** | `paas-k8s-master` | Debian | VM | `10.30.30.10` | K8s Master (Kubernetes Control Plane via kubeadm) |
+| **10003** | `paas-db-gateway` | Debian | LXC | `10.40.40.10` | Database Node: PostgreSQL, MariaDB, MySQL (Internal Access Only) |
+| **10004** | `paas-kv-gateway` | Debian | LXC | `10.40.40.20` | Key-Value Node: Redis Cluster / Valkey (Internal Access Only) |
+| **20000** | `paas-k8s-master` | Debian | VM | `10.30.30.10` | K8s Master (Kubernetes Control Plane via kubeadm) |
+| **20001** | `paas-worker-1` | Debian | VM | `10.30.30.11` | K8s Worker Node 1 (Runs Traefik Ingress & Customer Pods) |
+| **20002** | `paas-worker-2` | Debian | VM | `10.30.30.12` | K8s Worker Node 2 (Runs Traefik Ingress & Customer Pods) |
 | **20003** | `paas-runner-builder` | Debian | VM | `10.30.30.20` | CI/CD Runner / Builder Node (Docker / Wasm compilation compiler) |
-| **20000** | `paas-worker-1` | Debian | VM | `10.30.30.11` | K8s Worker Node 1 (Runs Traefik Ingress & Customer Pods) |
-| **20001** | `paas-worker-2` | Debian | VM | `10.30.30.12` | K8s Worker Node 2 (Runs Traefik Ingress & Customer Pods) |
 
 ---
 
@@ -74,19 +74,19 @@ graph TD
     subgraph Proxmox_Cluster [Proxmox VE Host Network]
         
         subgraph Ingress_Subnet [Ingress Network - 10.10.10.0/24]
-            subgraph Ingress_LXC [paas-ingress-router LXC 10001]
+            subgraph Ingress_LXC [paas-ingress-router LXC 10000]
                 CFTunnel[cloudflared client]
             end
         end
 
         subgraph K8s_Subnet [Kubernetes Network - 10.30.30.0/24]
-            subgraph Master_VM [paas-k8s-master VM 20002]
+            subgraph Master_VM [paas-k8s-master VM 20000]
                 K8s_API[K8s Control Plane]
             end
             subgraph Builder_VM [paas-runner-builder VM 20003]
                 Builder[Runner / Docker & Wasm Builder]
             end
-            subgraph Worker_VMs [K8s Workers - VM 20000 & 20001]
+            subgraph Worker_VMs [K8s Workers - VM 20001 & 20002]
                 Traefik[Traefik Ingress Controller]
                 Customer_Pod_1[Customer App Pod 1]
                 Customer_Pod_2[Customer App Pod 2]
@@ -94,13 +94,13 @@ graph TD
         end
 
         subgraph Management_Subnet [Management Network - 10.20.20.0/24]
-            ControlPlane[paas-control-plane LXC 10000 - Laravel]
+            ControlPlane[paas-control-plane LXC 10001 - Laravel]
             Registry[paas-private-registry LXC 10002 - Docker Registry]
         end
 
         subgraph Storage_Subnet [Database & Cache Network - 10.40.40.0/24]
-            DB_Node[paas-db-gateway LXC 10004 - PG/MariaDB/MySQL]
-            KV_Node[paas-kv-gateway LXC 10005 - Redis/Valkey]
+            DB_Node[paas-db-gateway LXC 10003 - PG/MariaDB/MySQL]
+            KV_Node[paas-kv-gateway LXC 10004 - Redis/Valkey]
         end
 
     end
@@ -129,7 +129,7 @@ graph TD
 
 ## 4. Detailed Node Specifications
 
-### 4.1 Ingress Router (`paas-ingress-router` - LXC 10001)
+### 4.1 Ingress Router (`paas-ingress-router` - LXC 10000)
 * **Configuration**: Runs only the `cloudflared` client.
 * **Role**:
   * Establishes outbound connections to Cloudflare Edge.
@@ -137,7 +137,7 @@ graph TD
   * Requires zero routing logic or dynamic reload scripts; its configuration is static.
 * **Network Isolation**: Dual-homed on `10.10.10.0/24` and `10.30.30.0/24`.
 
-### 4.2 Control Plane (`paas-control-plane` - LXC 10000)
+### 4.2 Control Plane (`paas-control-plane` - LXC 10001)
 * **Configuration**: Nginx + PHP-FPM (Laravel Application).
 * **Role**:
   * Houses the management database for dyzulk-cloud (customers, billings, deployments metadata).
@@ -163,7 +163,7 @@ graph TD
     ```
   * This keeps data secure on the host's HDD even if the LXC container is corrupted or deleted.
 
-### 4.4 Node Master (`paas-k8s-master` - VM 20002)
+### 4.4 Node Master (`paas-k8s-master` - VM 20000)
 * **Configuration**: Fresh Debian VM, minimal resources (e.g. 2 Cores, 2GB RAM).
 * **Role**:
   * Runs the standard Kubernetes control plane (kubeadm, kube-apiserver, kube-scheduler, etcd).
@@ -181,7 +181,7 @@ graph TD
     4. Pushes the compiled image to `paas-private-registry`.
   * Keeps compilation overhead away from worker nodes to ensure stable customer service performance.
 
-### 4.6 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20000 & 20001)
+### 4.6 Node Worker (`paas-worker-1` & `paas-worker-2` - VMs 20001 & 20002)
 * **Configuration**: Fresh Debian VMs, high RAM allocation, optimized container runtime.
 * **Role**:
   * Runs containerd runtime and the `kubelet` agent.
@@ -189,13 +189,13 @@ graph TD
   * Runs the Traefik Ingress Controller (deployed via Helm) to dynamically route and load-balance traffic among customer pods inside the node based on Host headers.
   * Strictly stateless and clean: developer toolchains are absent.
 
-### 4.7 Node Databases (`paas-db-gateway` - LXC 10004)
+### 4.7 Node Databases (`paas-db-gateway` - LXC 10003)
 * **Configuration**: PostgreSQL, MariaDB, and MySQL engines.
 * **Role**:
   * Standard database hosting for customers.
   * Internal access only. Integrated with connection poolers (e.g. PgBouncer, ProxySQL) to handle serverless connections from customer pods.
 
-### 4.8 Node Key-Value / Redis (`paas-kv-gateway` - LXC 10005)
+### 4.8 Node Key-Value / Redis (`paas-kv-gateway` - LXC 10004)
 * **Configuration**: Redis / Valkey instances.
 * **Role**:
   * Serving serverless key-value access.
@@ -215,11 +215,11 @@ graph TD
 sequenceDiagram
     autonumber
     actor Developer as Developer / Git Push
-    participant Laravel as Laravel Control Plane (LXC 10000)
+    participant Laravel as Laravel Control Plane (LXC 10001)
     participant Builder as Builder Node (VM 20003)
     participant Registry as Private Registry (LXC 10002)
-    participant K8s_Master as K8s Master (VM 20002)
-    participant Workers as K8s Workers (VM 20000/20001)
+    participant K8s_Master as K8s Master (VM 20000)
+    participant Workers as K8s Workers (VM 20001/20002)
     
     Developer ->> Laravel: Git Push (Webhook)
     Laravel ->> Laravel: Validate User Account & Limits
