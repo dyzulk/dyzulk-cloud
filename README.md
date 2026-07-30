@@ -6,9 +6,10 @@ This directory is the single source of truth for the dyzulk-cloud PaaS platform 
 
 ```
 architectur-docs/
-├── README.md               - This guide
-├── paas_infrastructure.md - Proxmox VM/LXC allocations and Cloudflare Tunnel layout
-└── trash-plan/             - Archived and legacy plans
+├── README.md                           - This index guide
+├── network_k8s_architecture.md          - High-level architecture, network, and node specs
+├── k8s_proxmox_implementation_guide.md - Step-by-step setup, Laravel integration, and gateway configuration
+└── trash-plan/                          - Archived and legacy plans
 ```
 
 * **Core Blueprints**: Located at the root of the directory.
@@ -18,7 +19,8 @@ architectur-docs/
 
 | File | Purpose | Status |
 | :--- | :--- | :--- |
-| [paas_infrastructure.md](paas_infrastructure.md) | Proxmox VM/LXC allocation, network interface mappings, and Cloudflare Tunnel layout. | Active |
+| [network_k8s_architecture.md](network_k8s_architecture.md) | High-level PaaS architecture design, VM/LXC allocation, proxy comparisons, and automation workflow. | Active |
+| [k8s_proxmox_implementation_guide.md](k8s_proxmox_implementation_guide.md) | Detailed setup instructions for K3s on Proxmox (Debian), Laravel RBAC configuration, Cloudflare Tunnel setup, and database/caching serverless simulation. | Active |
 
 ## Technical Standards and Tools
 
