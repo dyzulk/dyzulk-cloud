@@ -9,6 +9,7 @@ architectur-docs/
 ├── README.md                           - This index guide
 ├── network_k8s_architecture.md          - High-level architecture, network, and node specs
 ├── k8s_proxmox_implementation_guide.md - Step-by-step setup, Laravel integration, and gateway configuration
+├── paas_tasks_and_processes.md          - Roadmap, alur proses, dan daftar tugas lengkap
 └── trash-plan/                          - Archived and legacy plans
 ```
 
@@ -20,7 +21,8 @@ architectur-docs/
 | File | Purpose | Status |
 | :--- | :--- | :--- |
 | [network_k8s_architecture.md](network_k8s_architecture.md) | High-level PaaS architecture design, VM/LXC allocation, proxy comparisons, and automation workflow. | Active |
-| [k8s_proxmox_implementation_guide.md](k8s_proxmox_implementation_guide.md) | Detailed setup instructions for K3s on Proxmox (Debian), Laravel RBAC configuration, Cloudflare Tunnel setup, and database/caching serverless simulation. | Active |
+| [k8s_proxmox_implementation_guide.md](k8s_proxmox_implementation_guide.md) | Detailed setup instructions for K8s on Proxmox (Debian) via kubeadm, Laravel RBAC configuration, Cloudflare Tunnel setup, and database/caching serverless simulation. | Active |
+| [paas_tasks_and_processes.md](paas_tasks_and_processes.md) | Peta jalan (roadmap) pembangunan platform PaaS, alur komunikasi sistem, dan daftar tugas lengkap per fase. | Active |
 
 ## Technical Standards and Tools
 
