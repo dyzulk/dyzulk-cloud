@@ -116,6 +116,7 @@ preflight() {
     echo "============================================"
     echo "  dyzulk-cloud Uninstaller - ${DATE}"
     echo "  Target: Ubuntu Server 24.04 LTS"
+    echo "  Bypass Confirmations (FORCE): ${FORCE}"
     echo "============================================"
     echo ""
     printf "${RED}  WARNING: This will remove ALL dyzulk-cloud${NC}\n"
