@@ -21,7 +21,9 @@ set -o pipefail
 DATE=$(date +"%Y%m%d-%H%M%S")
 CONTROL_NETWORK="control-network"
 DATA_DIR="/data/dyzulk-cloud"
-FORCE=false
+
+# Initialize FORCE from env variable (useful for curl | FORCE=true bash)
+FORCE="${FORCE:-false}"
 
 # ==========================================================================
 # Colors
@@ -39,10 +41,17 @@ NC="\033[0m"
 for arg in "$@"; do
     case $arg in
         --force|--yes|-y)
-            FORCE=true
+            FORCE="true"
             ;;
     esac
 done
+
+# Standardize FORCE variable to boolean checks
+if [ "$FORCE" = "true" ] || [ "$FORCE" = "1" ] || [ "$FORCE" = "yes" ]; then
+    FORCE=true
+else
+    FORCE=false
+fi
 
 # ==========================================================================
 # Helper Functions
