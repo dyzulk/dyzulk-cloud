@@ -8,22 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Marquee from '@/components/ui/marquee';
-import { cn } from '@/lib/utils';
+import Star1 from '@/components/ui/stars';
 import { dashboard, login, register } from '@/routes';
-
-export function NeobrutalismStar({ className }: { className?: string }) {
-    return (
-        <svg
-            viewBox="0 0 100 100"
-            className={cn(
-                "w-12 h-12 fill-main stroke-border stroke-[3px] filter drop-shadow-[4px_4px_0px_#000000]",
-                className
-            )}
-        >
-            <path d="M 50,0 L 60,35 L 95,35 L 68,57 L 78,92 L 50,70 L 22,92 L 32,57 L 5,35 L 40,35 Z" />
-        </svg>
-    );
-}
 
 export default function Welcome() {
     const { auth, currentTeam } = usePage().props;
@@ -40,7 +26,7 @@ export default function Welcome() {
                     <div className="max-w-6xl mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-8">
                             <Link href="/" className="flex items-center gap-2 hover:translate-x-1 transition-transform">
-                                <NeobrutalismStar className="w-8 h-8 filter-none shadow-none" />
+                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-8 h-8 filter-none" />
                                 <span className="font-heading text-lg tracking-tight">dyzulk.cloud</span>
                             </Link>
                             <div className="hidden md:block">
@@ -115,7 +101,7 @@ export default function Welcome() {
                             {/* Giant Spinning Star Decorator */}
                             <div className="relative group cursor-pointer">
                                 <div className="absolute -inset-4 bg-main rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                                <NeobrutalismStar className="w-48 h-48 md:w-64 md:h-64 transition-transform duration-1000 ease-out hover:rotate-45" />
+                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-48 h-48 md:w-64 md:h-64 transition-transform duration-1000 ease-out hover:rotate-45 filter drop-shadow-[4px_4px_0px_#000000]" />
                                 
                                 <div className="absolute -top-6 -right-6 bg-secondary-background border-2 border-border rounded-base p-2 shadow-shadow rotate-[12deg]">
                                     <span className="text-xs font-bold">100% Solid</span>
@@ -191,12 +177,12 @@ export default function Welcome() {
                         {/* Marquee Row */}
                         <div className="border-y-4 border-border bg-main py-4 rotate-[1deg] shadow-shadow">
                             <Marquee items={[
-                                "🚀 Deploy in seconds",
-                                "⭐ Automatic SSL",
-                                "🔒 Strictly Secure",
-                                "⚡ Valkey & Redis Caching",
-                                "📊 In-Depth Metrics",
-                                "🛡️ WAF DDoS Protection"
+                                "Deploy in seconds",
+                                "Automatic SSL",
+                                "Strictly Secure",
+                                "Valkey & Redis Caching",
+                                "In-Depth Metrics",
+                                "WAF DDoS Protection"
                             ]} />
                         </div>
 
@@ -246,7 +232,7 @@ export default function Welcome() {
                     <div className="w-full max-w-2xl">
                         <Card className="border-2 border-border shadow-shadow rounded-base bg-secondary-background p-8 md:p-12 text-center space-y-6 relative overflow-hidden">
                             <div className="absolute top-4 right-4 animate-bounce">
-                                <NeobrutalismStar className="w-10 h-10 filter-none shadow-none" />
+                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-10 h-10 filter-none animate-bounce" />
                             </div>
                             
                             <h2 className="text-3xl md:text-5xl font-heading leading-tight">
@@ -276,7 +262,7 @@ export default function Welcome() {
                 <footer className="border-t-4 border-border bg-secondary-background px-6 py-8">
                     <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-foreground/80">
                         <div className="flex items-center gap-2">
-                            <NeobrutalismStar className="w-5 h-5 filter-none shadow-none" />
+                            <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-5 h-5 filter-none" />
                             <span className="font-heading">dyzulk.cloud</span>
                         </div>
                         <div className="flex items-center gap-1">
