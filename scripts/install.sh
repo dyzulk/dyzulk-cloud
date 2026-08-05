@@ -42,7 +42,7 @@ DOCKER_POOL_SIZE="${DOCKER_POOL_SIZE:-24}"
 SKIP_GVISOR="${SKIP_GVISOR:-false}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-v3.0}"
 POSTGRES_VERSION="${POSTGRES_VERSION:-16-alpine}"
-PANEL_IMAGE="${PANEL_IMAGE:-dyzulk/cloud-panel:latest}"
+PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 
 # ==========================================================================
 # Colors
