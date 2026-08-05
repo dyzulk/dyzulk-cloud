@@ -7,8 +7,9 @@
 ##
 ## Usage:
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash -s -- --force
 ##   sudo bash uninstall.sh
-##   sudo bash uninstall.sh --force    (skip all confirmations)
+##   sudo bash uninstall.sh --force
 ##
 
 set -e
@@ -28,6 +29,7 @@ FORCE=false
 RED="\033[0;31m"
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
+BLUE="\033[0;34m"
 CYAN="\033[0;36m"
 NC="\033[0m"
 
@@ -75,8 +77,16 @@ confirm() {
     fi
 
     local message="$1"
+    local response
     printf "${YELLOW}${message} [y/N]: ${NC}"
-    read -r response
+    
+    # Read from /dev/tty directly to support piping (curl ... | bash)
+    if [ -t 0 ]; then
+        read -r response
+    else
+        read -r response < /dev/tty
+    fi
+
     case "$response" in
         [yY][eE][sS]|[yY]) return 0 ;;
         *) return 1 ;;
