@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Shield, Cpu, Database, Heart, Sparkles, HelpCircle } from 'lucide-react';
+import { ArrowRight, Heart, Sparkles, HelpCircle } from 'lucide-react';
 import * as React from 'react';
+import ApplicationLogo from '@/components/application-logo';
 import { MegaMenu } from '@/components/mega-menu';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Marquee from '@/components/ui/marquee';
-import Star1 from '@/components/ui/stars';
+import Star10 from '@/components/ui/stars/s10';
+import Star15 from '@/components/ui/stars/s15';
+import Star20 from '@/components/ui/stars/s20';
+import Star22 from '@/components/ui/stars/s22';
+import Star30 from '@/components/ui/stars/s30';
+import Star33 from '@/components/ui/stars/s33';
+import Star40 from '@/components/ui/stars/s40';
+import Star8 from '@/components/ui/stars/s8';
 import { dashboard, login, register } from '@/routes';
 
 export default function Welcome() {
@@ -26,8 +34,7 @@ export default function Welcome() {
                     <div className="max-w-6xl mx-auto flex items-center justify-between">
                         <div className="flex items-center gap-8">
                             <Link href="/" className="flex items-center gap-2 hover:translate-x-1 transition-transform">
-                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-8 h-8 filter-none" />
-                                <span className="font-heading text-lg tracking-tight">dyzulk.cloud</span>
+                                <ApplicationLogo className="h-6 w-auto text-[#1b1b18] dark:text-[#EDEDEC]" />
                             </Link>
                             <div className="hidden md:block">
                                 <MegaMenu />
@@ -98,12 +105,18 @@ export default function Welcome() {
                         </div>
 
                         <div className="flex-1 flex justify-center items-center relative">
-                            {/* Giant Spinning Star Decorator */}
+                            {/* Giant Spinning Star Decorators */}
                             <div className="relative group cursor-pointer">
                                 <div className="absolute -inset-4 bg-main rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-48 h-48 md:w-64 md:h-64 transition-transform duration-1000 ease-out hover:rotate-45 filter drop-shadow-[4px_4px_0px_#000000]" />
                                 
-                                <div className="absolute -top-6 -right-6 bg-secondary-background border-2 border-border rounded-base p-2 shadow-shadow rotate-[12deg]">
+                                {/* Main big star */}
+                                <Star20 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-48 h-48 md:w-64 md:h-64 transition-transform duration-1000 ease-out hover:rotate-45 filter drop-shadow-[4px_4px_0px_#000000]" />
+                                
+                                {/* Smaller decorative stars floating around */}
+                                <Star10 color="#ff6b6b" stroke="var(--border)" strokeWidth={6} className="absolute -top-10 -left-10 w-16 h-16 animate-pulse filter drop-shadow-[2px_2px_0px_#000000]" />
+                                <Star30 color="#4dabf7" stroke="var(--border)" strokeWidth={6} className="absolute -bottom-6 -right-6 w-16 h-16 animate-bounce filter drop-shadow-[2px_2px_0px_#000000]" />
+                                
+                                <div className="absolute -top-6 right-6 bg-secondary-background border-2 border-border rounded-base p-2 shadow-shadow rotate-[12deg]">
                                     <span className="text-xs font-bold">100% Solid</span>
                                 </div>
                             </div>
@@ -122,10 +135,10 @@ export default function Welcome() {
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-8">
-                            <Card className="hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all duration-200">
+                             <Card className="hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all duration-200">
                                 <CardHeader>
                                     <div className="w-12 h-12 rounded-base bg-main border-2 border-border flex items-center justify-center mb-2 shadow-shadow">
-                                        <Shield className="h-6 w-6 text-main-foreground" />
+                                        <Star15 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="h-8 w-8" />
                                     </div>
                                     <CardTitle className="text-xl">Strict Security</CardTitle>
                                     <CardDescription>
@@ -140,7 +153,7 @@ export default function Welcome() {
                             <Card className="hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all duration-200">
                                 <CardHeader>
                                     <div className="w-12 h-12 rounded-base bg-main border-2 border-border flex items-center justify-center mb-2 shadow-shadow">
-                                        <Cpu className="h-6 w-6 text-main-foreground" />
+                                        <Star22 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="h-8 w-8" />
                                     </div>
                                     <CardTitle className="text-xl">App Cluster Compute</CardTitle>
                                     <CardDescription>
@@ -155,7 +168,7 @@ export default function Welcome() {
                             <Card className="hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all duration-200">
                                 <CardHeader>
                                     <div className="w-12 h-12 rounded-base bg-main border-2 border-border flex items-center justify-center mb-2 shadow-shadow">
-                                        <Database className="h-6 w-6 text-main-foreground" />
+                                        <Star33 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="h-8 w-8" />
                                     </div>
                                     <CardTitle className="text-xl">Attached Databases</CardTitle>
                                     <CardDescription>
@@ -232,7 +245,7 @@ export default function Welcome() {
                     <div className="w-full max-w-2xl">
                         <Card className="border-2 border-border shadow-shadow rounded-base bg-secondary-background p-8 md:p-12 text-center space-y-6 relative overflow-hidden">
                             <div className="absolute top-4 right-4 animate-bounce">
-                                <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-10 h-10 filter-none animate-bounce" />
+                                <Star40 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-10 h-10 filter-none animate-bounce" />
                             </div>
                             
                             <h2 className="text-3xl md:text-5xl font-heading leading-tight">
@@ -262,7 +275,7 @@ export default function Welcome() {
                 <footer className="border-t-4 border-border bg-secondary-background px-6 py-8">
                     <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-foreground/80">
                         <div className="flex items-center gap-2">
-                            <Star1 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-5 h-5 filter-none" />
+                            <Star8 color="var(--main)" stroke="var(--border)" strokeWidth={6} className="w-5 h-5 filter-none" />
                             <span className="font-heading">dyzulk.cloud</span>
                         </div>
                         <div className="flex items-center gap-1">
