@@ -2,12 +2,11 @@
 ## ==========================================================================
 ## dyzulk-cloud Control Plane Installer
 ## Target OS: Ubuntu Server 24.04 LTS (Noble Numbat) ONLY
-## Orchestrator: Docker Swarm (like Dokploy)
+## Orchestrator: Docker Swarm Mode
 ## ==========================================================================
 ##
 ## Usage:
-##   curl -sSL https://yourdomain.com/install.sh | sudo bash
-##   sudo bash install.sh
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash
 ##
 ## Environment variables:
 ##   PANEL_DOMAIN        - Domain for the control panel (default: auto-detect IP)
@@ -188,7 +187,7 @@ preflight_checks() {
 
     log_success "OS verified: Ubuntu ${os_version}"
 
-    # Port checks (inspired by Dokploy)
+    # Port checks
     local ports_in_use=""
     if ss -tulnp | grep -q ':80 '; then
         ports_in_use="${ports_in_use} 80"
@@ -210,7 +209,7 @@ preflight_checks() {
 }
 
 # ==========================================================================
-# Disk Space Check (inspired by Coolify)
+# Disk Space Check
 # ==========================================================================
 
 check_disk_space() {
@@ -296,7 +295,7 @@ install_docker() {
 
     log "Installing Docker Engine from official repository..."
 
-    # Detect snap-based Docker (incompatible, like Coolify checks)
+    # Detect snap-based Docker (incompatible)
     if command_exists snap; then
         if snap list docker > /dev/null 2>&1; then
             log_error "Docker is installed via snap. Please remove it first: snap remove docker"
@@ -336,7 +335,7 @@ configure_docker() {
 
     mkdir -p /etc/docker
 
-    # Backup existing config (inspired by Coolify)
+    # Backup existing config
     if [ -f /etc/docker/daemon.json ]; then
         cp /etc/docker/daemon.json "/etc/docker/daemon.json.backup-${DATE}"
         log "Backed up existing daemon.json"
@@ -444,7 +443,7 @@ EOF
 setup_directories_and_secrets() {
     log_step "Step 7/9: Setting Up Directories, Swarm & Docker Secrets"
 
-    # Create directory structure (inspired by Coolify's /data/coolify/)
+    # Create directory structure
     mkdir -p "${DATA_DIR}"/{source,backups,proxy,containers}
     mkdir -p "${DATA_DIR}/proxy/dynamic"
     mkdir -p "${LOG_DIR}"
@@ -453,7 +452,7 @@ setup_directories_and_secrets() {
 
     log_success "Directory structure created at ${DATA_DIR}"
 
-    # --- Initialize Docker Swarm (like Dokploy) ---
+    # --- Initialize Docker Swarm ---
     docker swarm leave --force 2>/dev/null || true
 
     local advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
@@ -483,7 +482,7 @@ setup_directories_and_secrets() {
 
     log_success "Overlay network created: ${CONTROL_NETWORK}"
 
-    # --- Generate & Store Secrets via Docker Secrets (like Dokploy) ---
+    # --- Generate & Store Secrets via Docker Secrets ---
     local db_password="${DB_PASSWORD:-$(generate_random_password)}"
     local app_key="${APP_KEY:-base64:$(openssl rand -base64 32)}"
     local app_id
@@ -637,7 +636,7 @@ deploy_stack() {
         log_success "Control panel service created (image: ${PANEL_IMAGE})"
     fi
 
-    # --- Traefik Reverse Proxy (docker run, like Dokploy) ---
+    # --- Traefik Reverse Proxy (docker run) ---
     # Traefik runs as a regular container (not a Swarm service)
     # because it needs direct host port binding for 80/443
     if docker ps -a --format '{{.Names}}' | grep -q "^control-proxy$"; then
@@ -661,7 +660,7 @@ deploy_stack() {
 }
 
 # ==========================================================================
-# Health Check & Completion (inspired by Coolify's 240s health check)
+# Health Check & Completion
 # ==========================================================================
 
 health_check_and_finish() {
@@ -771,7 +770,7 @@ main() {
     # Create log directory early
     mkdir -p "$LOG_DIR"
 
-    # Tee all output to installation log (inspired by Coolify)
+    # Tee all output to installation log
     exec > >(tee -a "$INSTALLATION_LOG") 2>&1
 
     preflight_checks          # Step 0: Root, OS, ports
