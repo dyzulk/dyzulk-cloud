@@ -14,7 +14,7 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source and build frontend assets
 COPY resources/ resources/
-COPY vite.config.ts tsconfig.json tailwind.config.js postcss.config.js ./
+COPY vite.config.ts tsconfig.json ./
 RUN pnpm run build
 
 ################################################################################
