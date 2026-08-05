@@ -204,7 +204,7 @@ leave_swarm() {
     log_step "Step 5/8: Leaving Docker Swarm"
 
     if docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null | grep -q "active"; then
-        docker swarm leave --force > /dev/null 2>&1
+        docker swarm leave --force > /dev/null 2>&1 || true
         log_success "Docker Swarm disbanded"
     else
         log_warn "Server is not part of a Swarm, skipping"
