@@ -1,0 +1,53 @@
+# ===========================================
+# dyzulk-cloud .dockerignore
+# ===========================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (rebuilt inside container)
+node_modules
+vendor
+
+# Environment & secrets
+.env
+.env.*
+
+# IDE & editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts (rebuilt inside container)
+public/build
+public/hot
+
+# Storage (runtime only)
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Documentation & non-runtime files
+architectur-docs
+*.md
+!README.md
+
+# Testing
+tests
+phpunit.xml
+.phpunit.result.cache
+
+# Docker reference scripts
+scripts/dokploy-install.sh
+scripts/coolify-install.sh
+
+# CI/CD
+.github
