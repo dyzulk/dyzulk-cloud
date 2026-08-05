@@ -59,12 +59,15 @@ export default function Resources({ application, resources = [] }: Props) {
         if (res.type === 'postgresql') {
             return `Port ${res.connection_details?.port || 5432} • ${res.connection_details?.database || 'db'}`;
         }
+
         if (res.type === 'redis' || res.type === 'valkey') {
             return `Port ${res.connection_details?.port || 6379} • In-Memory`;
         }
+
         if (res.type === 's3') {
             return `${res.connection_details?.bucket || 'bucket'} • Object Store`;
         }
+
         return 'Connected resource';
     };
 
@@ -85,6 +88,7 @@ export default function Resources({ application, resources = [] }: Props) {
                 <div className="grid gap-4 md:grid-cols-3">
                     {resources.map((res) => {
                         const Icon = getResourceIcon(res.type);
+
                         return (
                             <Card key={res.id || res.name} className="border-border/80 p-5 shadow-xs transition-all hover:border-primary/40">
                                 <div className="flex items-center justify-between">

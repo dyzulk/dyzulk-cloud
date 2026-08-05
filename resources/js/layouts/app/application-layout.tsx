@@ -25,6 +25,7 @@ export default function ApplicationLayout({
     // Paths are like: /team-slug/applications/laravel-starter/overview
     // If the last segment is the application name, fallback to overview
     let activeTab: any = segments[segments.length - 1];
+
     if (activeTab === applicationName) {
         activeTab = 'overview';
     }

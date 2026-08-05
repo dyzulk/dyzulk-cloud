@@ -90,7 +90,7 @@ export default function CreateApplication({ gitConnections, gitHubAppUrl }: Prop
                 }
             );
         }
-    }, [activeConnection?.id]);
+    }, [activeConnection, reposHttp, teamSlug]);
 
     const filteredRepos = reposList.filter((r) =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,7 +144,7 @@ export default function CreateApplication({ gitConnections, gitHubAppUrl }: Prop
                 }
             );
         }
-    }, [selectedRepo]);
+    }, [selectedRepo, activeConnection, branchesHttp, setData, teamSlug]);
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -26,6 +26,7 @@ export default function EnvVars({ application, envVars = [] }: Props) {
 
     const isSecret = (key: string) => {
         const k = key.toUpperCase();
+
         return k.includes('KEY') || k.includes('PASSWORD') || k.includes('SECRET') || k.includes('TOKEN');
     };
 

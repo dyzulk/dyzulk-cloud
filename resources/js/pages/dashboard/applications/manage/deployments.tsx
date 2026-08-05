@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { CheckCircle2, Clock, GitCommit, Rocket, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, GitCommit, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ApplicationLayout from '@/layouts/app/application-layout';
@@ -31,15 +31,22 @@ export default function Deployments({ application, deployments }: Props) {
     const deploymentsList = deployments?.data || [];
 
     const getDuration = (started?: string, finished?: string) => {
-        if (!started || !finished) return 'N/A';
+        if (!started || !finished) {
+return 'N/A';
+}
+
         const start = new Date(started).getTime();
         const finish = new Date(finished).getTime();
         const diff = Math.round((finish - start) / 1000);
+
         return `${diff}s`;
     };
 
     const getFormattedTime = (timeStr?: string) => {
-        if (!timeStr) return 'N/A';
+        if (!timeStr) {
+return 'N/A';
+}
+
         return new Date(timeStr).toLocaleString();
     };
 
