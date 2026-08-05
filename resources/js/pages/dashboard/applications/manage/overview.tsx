@@ -106,12 +106,15 @@ export default function Overview({ application }: Props) {
         if (res.type === 'postgresql') {
             return `Port ${res.connection_details?.port || 5432} • ${res.connection_details?.database || 'db'}`;
         }
+
         if (res.type === 'redis' || res.type === 'valkey') {
             return `Port ${res.connection_details?.port || 6379} • In-Memory`;
         }
+
         if (res.type === 's3') {
             return `${res.connection_details?.bucket || 'bucket'} • Object Store`;
         }
+
         return 'Connected resource';
     };
 
@@ -120,14 +123,14 @@ export default function Overview({ application }: Props) {
             <Head title={`${appData.name} - Overview`} />
 
             {/* Network & Architecture Topology Diagram */}
-            <div className="relative w-full rounded-2xl border border-border/80 bg-muted/5 dark:bg-neutral-900/40 p-6 md:p-8 overflow-hidden shadow-xs">
+            <div className="relative w-full rounded-base border-2 border-border bg-secondary-background p-6 md:p-8 overflow-hidden shadow-shadow">
                 {/* Background Grid Pattern */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 md:gap-0 relative z-10">
                     
                     {/* COLUMN 1: EDGE NETWORK */}
-                    <div className="w-full md:w-[28%] bg-muted/20 dark:bg-neutral-900/30 border border-border/40 rounded-2xl p-5 flex flex-col gap-4 relative">
+                    <div className="w-full md:w-[28%] bg-background border-2 border-border rounded-base p-5 flex flex-col gap-4 relative">
                         <div className="flex items-center justify-between border-b border-border/30 pb-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Edge Network</span>
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
@@ -136,7 +139,7 @@ export default function Overview({ application }: Props) {
                         </div>
 
                         {/* CDN & Security Card */}
-                        <div className="group rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:border-blue-500/50 hover:shadow-md hover:shadow-blue-500/5">
+                        <div className="group rounded-base border-2 border-border bg-secondary-background p-4 shadow-shadow transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none">
                             <div className="flex items-center gap-2 border-b border-border/40 pb-2 mb-2">
                                 <Shield className="h-4 w-4 text-blue-500" />
                                 <span className="font-semibold text-foreground text-xs">DNS & CDN Gateway</span>
@@ -199,7 +202,7 @@ export default function Overview({ application }: Props) {
                     </div>
 
                     {/* COLUMN 2: COMPUTE CLUSTER */}
-                    <div className="w-full md:w-[28%] bg-muted/20 dark:bg-neutral-900/30 border border-border/40 rounded-2xl p-5 flex flex-col gap-4 relative">
+                    <div className="w-full md:w-[28%] bg-background border-2 border-border rounded-base p-5 flex flex-col gap-4 relative">
                         <div className="flex items-center justify-between border-b border-border/30 pb-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">App Cluster</span>
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-purple-500/20 bg-purple-500/5 text-purple-600 dark:text-purple-400">
@@ -208,7 +211,7 @@ export default function Overview({ application }: Props) {
                         </div>
 
                         {/* Web Instance Card */}
-                        <div className="group rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/5">
+                        <div className="group rounded-base border-2 border-border bg-secondary-background p-4 shadow-shadow transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none">
                             <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
                                 <div className="flex items-center gap-2">
                                     <Cpu className="h-4 w-4 text-purple-500" />
@@ -238,7 +241,7 @@ export default function Overview({ application }: Props) {
                         </div>
 
                         {/* Queue Worker Card */}
-                        <div className="group rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:border-purple-500/50 hover:shadow-md hover:shadow-purple-500/5">
+                        <div className="group rounded-base border-2 border-border bg-secondary-background p-4 shadow-shadow transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none">
                             <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-2">
                                 <div className="flex items-center gap-2">
                                     <Layers className="h-4 w-4 text-purple-500" />
@@ -275,7 +278,7 @@ export default function Overview({ application }: Props) {
                     </div>
 
                     {/* COLUMN 3: ATTACHED RESOURCES */}
-                    <div className="w-full md:w-[28%] bg-muted/20 dark:bg-neutral-900/30 border border-border/40 rounded-2xl p-5 flex flex-col gap-4 relative">
+                    <div className="w-full md:w-[28%] bg-background border-2 border-border rounded-base p-5 flex flex-col gap-4 relative">
                         <div className="flex items-center justify-between border-b border-border/30 pb-2">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Resources</span>
                             <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
@@ -286,8 +289,9 @@ export default function Overview({ application }: Props) {
                         {appData.resources && appData.resources.length > 0 ? (
                             appData.resources.map((res) => {
                                 const Icon = getResourceIcon(res.type);
+
                                 return (
-                                    <div key={res.id} className="group rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5">
+                                    <div key={res.id} className="group rounded-base border-2 border-border bg-secondary-background p-3 shadow-shadow transition-all hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <div className="flex items-center gap-1.5">
                                                 <Icon className="h-3.5 w-3.5 text-emerald-500" />
@@ -303,7 +307,7 @@ export default function Overview({ application }: Props) {
                             <div className="text-[10px] text-muted-foreground py-2 text-center">No resources attached</div>
                         )}
 
-                        <Button variant="outline" size="sm" className="w-full border-dashed text-xs h-9 justify-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/30">
+                        <Button variant="outline" size="sm" className="w-full border-2 border-dashed text-xs h-9 justify-center gap-1.5">
                             <Plus className="h-3.5 w-3.5" />
                             Attach Resource
                         </Button>
@@ -313,7 +317,7 @@ export default function Overview({ application }: Props) {
             </div>
 
             {/* Latest Deployments */}
-            <Card className="border-border/80 shadow-xs">
+            <Card className="border-2 border-border shadow-shadow rounded-base">
                 <CardHeader className="border-b border-border/40 px-6 py-4">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-semibold">
