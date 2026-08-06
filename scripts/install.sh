@@ -34,7 +34,7 @@
 ##   DOCKER_POOL_SIZE    - Custom Docker address pool size (default: 24)
 ##   SKIP_GVISOR         - Set to "true" to skip gVisor installation
 ##   TRAEFIK_VERSION     - Traefik image tag (default: v3.0)
-##   POSTGRES_VERSION    - PostgreSQL image tag (default: 18-alpine)
+##   POSTGRES_VERSION    - PostgreSQL image tag (default: 17-alpine)
 ##   PANEL_IMAGE         - Control panel Docker image (default: dyzulk/cloud-panel:latest)
 ##
 
@@ -58,7 +58,7 @@ DOCKER_POOL_BASE="${DOCKER_POOL_BASE:-10.0.0.0/8}"
 DOCKER_POOL_SIZE="${DOCKER_POOL_SIZE:-24}"
 SKIP_GVISOR="${SKIP_GVISOR:-false}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-v3.0}"
-POSTGRES_VERSION="${POSTGRES_VERSION:-18-alpine}"
+POSTGRES_VERSION="${POSTGRES_VERSION:-17-alpine}"
 PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 
 # ==========================================================================
