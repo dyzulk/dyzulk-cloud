@@ -52,11 +52,25 @@ class AppServiceProvider extends ServiceProvider
                 if ($instanceUrl) {
                     $host = parse_url($instanceUrl, PHP_URL_HOST);
                     if ($host && $host !== 'localhost' && $host !== '127.0.0.1') {
+                        $stateful = config('sanctum.stateful', []);
+                        if (is_string($stateful)) {
+                            $stateful = explode(',', $stateful);
+                        }
+
+                        $stateful = array_unique(array_filter(array_merge($stateful, [
+                            $host,
+                            'office.'.$host,
+                            'api.'.$host,
+                            'office.localhost',
+                            'localhost',
+                        ])));
+
                         config([
                             'app.domain' => $host,
                             'app.office.domain' => 'office.'.$host,
                             'app.api.domain' => 'api.'.$host,
                             'session.domain' => '.'.$host,
+                            'sanctum.stateful' => $stateful,
                         ]);
                     }
                 }
