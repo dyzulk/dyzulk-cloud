@@ -19,3 +19,11 @@ Route::prefix('webhooks')
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
+
+// 5. API Root
+Route::get('/', function () {
+    return response()->json([
+        'service' => 'dyzulk-cloud-api',
+        'status' => 'online',
+    ]);
+});
