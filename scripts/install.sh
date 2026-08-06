@@ -556,9 +556,15 @@ setup_directories_and_secrets() {
     app_id=$(openssl rand -hex 16)
 
     # Store in Docker Secrets (encrypted at rest, unlike plaintext .env)
-    echo "$db_password" | docker secret create dyzulk_db_password - > /dev/null 2>&1 || true
-    echo "$app_key" | docker secret create dyzulk_app_key - > /dev/null 2>&1 || true
-    echo "$app_id" | docker secret create dyzulk_app_id - > /dev/null 2>&1 || true
+    if ! docker secret inspect dyzulk_db_password >/dev/null 2>&1; then
+        echo "$db_password" | docker secret create dyzulk_db_password - > /dev/null 2>&1 || true
+    fi
+    if ! docker secret inspect dyzulk_app_key >/dev/null 2>&1; then
+        echo "$app_key" | docker secret create dyzulk_app_key - > /dev/null 2>&1 || true
+    fi
+    if ! docker secret inspect dyzulk_app_id >/dev/null 2>&1; then
+        echo "$app_id" | docker secret create dyzulk_app_id - > /dev/null 2>&1 || true
+    fi
 
     log_success "Docker Secrets verified/created (db_password, app_key, app_id)"
 
