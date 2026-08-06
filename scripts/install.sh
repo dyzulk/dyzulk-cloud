@@ -6,19 +6,23 @@
 ## ==========================================================================
 ##
 ## Usage:
-##   # Standard installation
+##   # Standard online installation
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash
 ##
-##   # Verbose installation (show detailed progress logs)
-##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --verbose
-##
-##   # Update Control Panel image to latest version
-##   sudo bash install.sh --update-panel
+##   # Online Control Panel image update
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --update-panel
 ##
-##   # Edit / Re-configure existing installation (update domains, ports, or environment)
-##   sudo bash install.sh --edit
-##   sudo PANEL_DOMAIN=my-domain.com bash install.sh --edit
+##   # Online domain / environment re-configuration
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_DOMAIN=my-panel.com bash -s -- --edit
+##
+##   # Verbose online installation
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --verbose
+##
+##   # Local file installation & updates
+##   sudo bash install.sh
+##   sudo bash install.sh --update-panel
+##   sudo PANEL_DOMAIN=my-panel.com bash install.sh --edit
+##   sudo bash install.sh --self-update
 ##
 ## Environment variables:
 ##   PANEL_DOMAIN        - Domain for the control panel (default: auto-detect IP)
@@ -40,6 +44,7 @@ set -o pipefail
 # ==========================================================================
 # Constants
 # ==========================================================================
+SCRIPT_VERSION="0.0.1"
 DATE=$(date +"%Y%m%d-%H%M%S")
 MIN_DOCKER_VERSION=27
 CONTROL_NETWORK="dyzulk-cloud-control-network"
@@ -64,6 +69,7 @@ PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 VERBOSE="${VERBOSE:-false}"
 EDIT_MODE="${EDIT_MODE:-false}"
 UPDATE_MODE="${UPDATE_MODE:-false}"
+SELF_UPDATE_MODE="${SELF_UPDATE_MODE:-false}"
 for arg in "$@"; do
     case $arg in
         --verbose)
@@ -74,6 +80,9 @@ for arg in "$@"; do
             ;;
         --update-panel|--update-image|--update|-u)
             UPDATE_MODE=true
+            ;;
+        --self-update|--update-script)
+            SELF_UPDATE_MODE=true
             ;;
     esac
 done
@@ -868,8 +877,55 @@ health_check_and_finish() {
 }
 
 # ==========================================================================
-# Fast Execution Tracks (Standalone Update & Edit)
+# Fast Execution Tracks (Standalone Update, Edit & Self-Update)
 # ==========================================================================
+
+check_script_version() {
+    local remote_version
+    remote_version=$(curl -sSL --connect-timeout 3 "https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh" 2>/dev/null | grep -E '^SCRIPT_VERSION=' | head -n1 | cut -d'"' -f2)
+
+    if [ -n "$remote_version" ] && [ "$remote_version" != "$SCRIPT_VERSION" ]; then
+        echo ""
+        printf "${YELLOW}[NOTICE] Script update available! (Local: v${SCRIPT_VERSION} -> Remote: v${remote_version})${NC}\n"
+        printf "${YELLOW}[NOTICE] Run 'sudo bash $0 --self-update' to update your local script file.${NC}\n"
+        echo ""
+    fi
+}
+
+fast_self_update() {
+    log_step "Self Update: Updating Installer Script File"
+
+    if [ "$(id -u)" != "0" ]; then
+        log_error "This script must be run as root (use sudo)"
+        exit 1
+    fi
+
+    local remote_url="https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh"
+    local target_file="${0}"
+    local tmp_file
+    tmp_file=$(mktemp)
+
+    log "Fetching latest installer script from GitHub (${remote_url})..."
+    if curl -sSL --connect-timeout 10 "$remote_url" -o "$tmp_file"; then
+        if grep -q "SCRIPT_VERSION" "$tmp_file"; then
+            chmod 755 "$tmp_file"
+            mv "$tmp_file" "$target_file"
+            echo ""
+            echo "============================================================"
+            printf "${GREEN}  Installer Script Updated Successfully!${NC}\n"
+            echo "============================================================"
+            echo "  Target File: ${target_file}"
+            echo "  Status: Updated to latest version from GitHub main branch"
+            echo ""
+            rm -f "$tmp_file" 2>/dev/null || true
+            exit 0
+        fi
+    fi
+
+    log_error "Failed to update installer script file from GitHub."
+    rm -f "$tmp_file" 2>/dev/null || true
+    exit 1
+}
 
 fast_update_panel_image() {
     log_step "Fast Track: Updating Control Panel Image"
@@ -988,7 +1044,7 @@ EOF
 main() {
     echo ""
     echo "============================================"
-    echo "  dyzulk-cloud Installer - ${DATE}"
+    echo "  dyzulk-cloud Installer (v${SCRIPT_VERSION}) - ${DATE}"
     echo "  Target: Ubuntu Server 24.04 LTS"
     echo "============================================"
     echo ""
@@ -998,6 +1054,14 @@ main() {
 
     # Tee all output to installation log
     exec > >(tee -a "$INSTALLATION_LOG") 2>&1
+
+    if [ "$SELF_UPDATE_MODE" = "true" ]; then
+        fast_self_update
+        exit 0
+    fi
+
+    # Check script version notice (non-blocking)
+    check_script_version
 
     if [ "$UPDATE_MODE" = "true" ]; then
         fast_update_panel_image
