@@ -329,7 +329,7 @@ install_docker() {
 
     # Detect snap-based Docker (incompatible)
     if command_exists snap; then
-        if snap list docker > "$REDIRECT" 2>&1; then
+        if snap list docker > /dev/null 2>&1; then
             log_error "Docker is installed via snap. Please remove it first: snap remove docker"
             exit 1
         fi
@@ -337,12 +337,12 @@ install_docker() {
 
     # Install from official Docker APT repository (Ubuntu 24 specific)
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2> "$REDIRECT"
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
     chmod a+r /etc/apt/keyrings/docker.gpg
 
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > "$REDIRECT"
+      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     apt-get update -y > "$REDIRECT" 2>&1
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin > "$REDIRECT" 2>&1
@@ -352,8 +352,8 @@ install_docker() {
         exit 1
     fi
 
-    systemctl enable docker > "$REDIRECT" 2>&1
-    systemctl start docker > "$REDIRECT" 2>&1
+    systemctl enable docker > /dev/null 2>&1
+    systemctl start docker > /dev/null 2>&1
 
     log_success "Docker v$(docker version --format '{{.Server.Version}}' 2>/dev/null) installed successfully"
 }
@@ -402,7 +402,7 @@ EOF
     systemctl restart docker
     sleep 2
 
-    if ! docker info > "$REDIRECT" 2>&1; then
+    if ! docker info > /dev/null 2>&1; then
         log_error "Docker daemon failed to start after configuration change"
         exit 1
     fi
@@ -436,7 +436,7 @@ install_gvisor() {
     chmod a+rx /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
 
     # Verify installation
-    if ! /usr/local/bin/runsc --version > "$REDIRECT" 2>&1; then
+    if ! /usr/local/bin/runsc --version > /dev/null 2>&1; then
         log_warn "gVisor installed but version check failed. Continuing anyway..."
     else
         log_success "gVisor $(runsc --version 2>&1 | head -1) installed"
@@ -463,7 +463,7 @@ net.ipv4.conf.default.rp_filter=1
 net.netfilter.nf_conntrack_max=131072
 EOF
 
-    sysctl --system > "$REDIRECT" 2>&1
+    sysctl --system > /dev/null 2>&1
 
     log_success "Kernel parameters configured"
 }
@@ -485,7 +485,7 @@ setup_directories_and_secrets() {
     log_success "Directory structure created at ${DATA_DIR}"
 
     # --- Initialize Docker Swarm ---
-    docker swarm leave --force 2> "$REDIRECT" || true
+    docker swarm leave --force 2>/dev/null || true
 
     local advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
 
@@ -499,7 +499,7 @@ setup_directories_and_secrets() {
         exit 1
     fi
 
-    docker swarm init --advertise-addr "$advertise_addr" > "$REDIRECT" 2>&1
+    docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1
 
     if [ $? -ne 0 ]; then
         log_error "Failed to initialize Docker Swarm"
@@ -509,8 +509,8 @@ setup_directories_and_secrets() {
     log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
 
     # --- Create Overlay Network ---
-    docker network rm -f "$CONTROL_NETWORK" 2> "$REDIRECT" || true
-    docker network create --driver overlay --attachable "$CONTROL_NETWORK" > "$REDIRECT" 2>&1
+    docker network rm -f "$CONTROL_NETWORK" 2>/dev/null || true
+    docker network create --driver overlay --attachable "$CONTROL_NETWORK" > /dev/null 2>&1
 
     log_success "Overlay network created: ${CONTROL_NETWORK}"
 
@@ -521,9 +521,9 @@ setup_directories_and_secrets() {
     app_id=$(openssl rand -hex 16)
 
     # Store in Docker Secrets (encrypted at rest, unlike plaintext .env)
-    echo "$db_password" | docker secret create dyzulk_db_password - > "$REDIRECT" 2>&1 || true
-    echo "$app_key" | docker secret create dyzulk_app_key - > "$REDIRECT" 2>&1 || true
-    echo "$app_id" | docker secret create dyzulk_app_id - > "$REDIRECT" 2>&1 || true
+    echo "$db_password" | docker secret create dyzulk_db_password - > /dev/null 2>&1 || true
+    echo "$app_key" | docker secret create dyzulk_app_key - > /dev/null 2>&1 || true
+    echo "$app_id" | docker secret create dyzulk_app_id - > /dev/null 2>&1 || true
 
     log_success "Docker Secrets created (db_password, app_key, app_id)"
 
@@ -624,7 +624,7 @@ deploy_stack() {
         local pg_container
         pg_container=$(docker ps --filter name=dyzulk-cloud-control-postgres --format '{{.ID}}' | head -1)
         if [ -n "$pg_container" ]; then
-            if docker exec "$pg_container" pg_isready -U panel_admin > "$REDIRECT" 2>&1; then
+            if docker exec "$pg_container" pg_isready -U panel_admin > /dev/null 2>&1; then
                 break
             fi
         fi
@@ -685,7 +685,7 @@ deploy_stack() {
             "traefik:${TRAEFIK_VERSION}" > /dev/null
 
         # Connect proxy to swarm overlay network
-        docker network connect "$CONTROL_NETWORK" dyzulk-cloud-control-ingress 2> "$REDIRECT" || true
+        docker network connect "$CONTROL_NETWORK" dyzulk-cloud-control-ingress 2>/dev/null || true
 
         log_success "Traefik ${TRAEFIK_VERSION} deployed (ports 80/443/443-udp)"
     fi
@@ -704,7 +704,7 @@ health_check_and_finish() {
     local all_healthy=true
     for svc in dyzulk-cloud-control-postgres dyzulk-cloud-control-panel; do
         local replicas
-        replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2> "$REDIRECT")
+        replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
         if echo "$replicas" | grep -q "1/1"; then
             log_success "${svc} (swarm service): 1/1 replicas running"
         else
@@ -715,7 +715,7 @@ health_check_and_finish() {
 
     # Check Traefik container (regular container, not swarm service)
     local proxy_status
-    proxy_status=$(docker inspect --format='{{.State.Status}}' dyzulk-cloud-control-ingress 2> "$REDIRECT" || echo "missing")
+    proxy_status=$(docker inspect --format='{{.State.Status}}' dyzulk-cloud-control-ingress 2>/dev/null || echo "missing")
     if [ "$proxy_status" = "running" ]; then
         log_success "dyzulk-cloud-control-ingress (container): running"
     else
