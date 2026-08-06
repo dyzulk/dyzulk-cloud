@@ -22,8 +22,6 @@ services:
             WWWUSER: '${WWWUSER:-1000}'
             LARAVEL_SAIL: 1
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
-            DB_CONNECTION: 'sqlite'
-            DB_DATABASE: '/var/www/html/database/database.sqlite'
         volumes:
             - '.:/var/www/html'
             - '/var/run/docker.sock:/var/run/docker.sock'

@@ -17,7 +17,7 @@ This skill provides guidelines and conventions for managing local Docker develop
 ## Foundational Architecture
 
 - **Runtime Image**: Uses PHP 8.5 (`./vendor/laravel/sail/runtimes/8.5`) to align PHP version with the Production Docker image (`dunglas/frankenphp:php8.5-alpine`).
-- **Database (Lightweight)**: Uses **SQLite** (`DB_CONNECTION=sqlite`) by default for zero memory daemon overhead, fast booting, and lightweight development.
+- **Dynamic `.env` Integration**: Sail automatically reads and respects the development configuration from the root `.env` file (e.g. `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, etc.) via volume mount `.:/var/www/html`.
 - **Container Isolation**:
   - Container Name: `dyzulk-cloud-dev-app`
   - Container Labels:
@@ -56,8 +56,6 @@ services:
             WWWUSER: '${WWWUSER:-1000}'
             LARAVEL_SAIL: 1
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
-            DB_CONNECTION: 'sqlite'
-            DB_DATABASE: '/var/www/html/database/database.sqlite'
         volumes:
             - '.:/var/www/html'
             - '/var/run/docker.sock:/var/run/docker.sock'
