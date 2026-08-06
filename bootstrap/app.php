@@ -23,13 +23,16 @@ use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-        then: function () {
+        using: function () {
             $port = (int) (($_SERVER['SERVER_PORT'] ?? null) ?: (request()->server('SERVER_PORT') ?: (request()->getPort() ?: 8000)));
 
-            // Port 8002 -> REST API at root
+            // 1. Manual registration for Health Check route
+            Route::any('/up', function () {
+                return response()->noContent();
+            });
+
+            // 2. Port 8002 -> REST API at root, otherwise under '/api' prefix
             if ($port === 8002) {
                 Route::middleware('api')
                     ->group(base_path('routes/api.php'));
@@ -39,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->group(base_path('routes/api.php'));
             }
 
-            // Port 8001 -> Office Dashboard at root
+            // 3. Port 8001 -> Office Dashboard at root
             if ($port === 8001) {
                 Route::middleware('office')
                     ->group(base_path('routes/office.php'));
@@ -47,6 +50,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 Route::middleware('office')
                     ->domain('office.localhost')
                     ->group(base_path('routes/office.php'));
+            }
+
+            // 4. Default web routes (only loaded on non-specialized ports, or in console)
+            if ($port !== 8001 && $port !== 8002) {
+                Route::middleware('web')
+                    ->group(base_path('routes/web.php'));
             }
         },
     )
