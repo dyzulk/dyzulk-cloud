@@ -70,8 +70,11 @@ RUN composer install \
 # Copy built frontend assets from Stage 1
 COPY --from=frontend /app/public/build public/build
 
+# Copy Caddyfile configuration
+COPY docker/Caddyfile /etc/caddy/Caddyfile
+
 # Copy entrypoint script
-COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set correct permissions

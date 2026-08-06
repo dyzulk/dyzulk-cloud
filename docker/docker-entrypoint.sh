@@ -29,7 +29,9 @@ if [ -n "$APP_KEY_FILE" ] && [ -f "$APP_KEY_FILE" ]; then
 fi
 
 # --- Ensure storage directories exist ---
-mkdir -p /app/storage/framework/{cache,sessions,views}
+mkdir -p /app/storage/framework/cache
+mkdir -p /app/storage/framework/sessions
+mkdir -p /app/storage/framework/views
 mkdir -p /app/storage/logs
 mkdir -p /app/bootstrap/cache
 
@@ -37,13 +39,13 @@ chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # --- Run database migrations ---
 echo "[entrypoint] Running database migrations..."
-php artisan migrate --force --no-interaction 2>/dev/null || true
+php artisan migrate --force --no-interaction || true
 
 # --- Cache configuration for production ---
 echo "[entrypoint] Caching configuration..."
-php artisan config:cache 2>/dev/null || true
-php artisan route:cache 2>/dev/null || true
-php artisan view:cache 2>/dev/null || true
+php artisan config:cache || true
+php artisan route:cache || true
+php artisan view:cache || true
 
 echo "[entrypoint] dyzulk-cloud panel ready"
 
