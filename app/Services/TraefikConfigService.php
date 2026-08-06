@@ -16,32 +16,24 @@ class TraefikConfigService
         $instanceUrl = SiteSetting::get('instance_url', env('APP_URL', 'http://localhost'));
         $wildcardDomain = SiteSetting::get('wildcard_domain', '*.dyzulk.test');
 
-        $hostRules = [
-            'Host(`localhost`)',
-            'Host(`127.0.0.1`)',
-            'Host(`office.localhost`)',
-        ];
-
-        // Parse host from instance_url
-        $parsedHost = parse_url($instanceUrl, PHP_URL_HOST);
-        if ($parsedHost) {
-            $hostRules[] = "Host(`{$parsedHost}`)";
-            $hostRules[] = "Host(`office.{$parsedHost}`)";
-            $hostRules[] = "Host(`api.{$parsedHost}`)";
-        }
-
-        // Deduplicate host rules
-        $hostRules = array_unique(array_values($hostRules));
-        $ruleString = implode(' || ', $hostRules);
-
         $targetServiceHost = env('TRAEFIK_TARGET_SERVICE', 'dyzulk-cloud-dev-app');
 
         $config = [
             'http' => [
                 'routers' => [
-                    'dyzulk-cloud-control-plane' => [
-                        'entryPoints' => ['web'],
-                        'rule' => $ruleString,
+                    'dyzulk-cloud-app' => [
+                        'entryPoints' => ['web', 'app'],
+                        'rule' => 'PathPrefix(`/`)',
+                        'service' => 'dyzulk-cloud-control-plane-service',
+                    ],
+                    'dyzulk-cloud-office' => [
+                        'entryPoints' => ['office'],
+                        'rule' => 'PathPrefix(`/`)',
+                        'service' => 'dyzulk-cloud-control-plane-service',
+                    ],
+                    'dyzulk-cloud-api' => [
+                        'entryPoints' => ['api'],
+                        'rule' => 'PathPrefix(`/`)',
                         'service' => 'dyzulk-cloud-control-plane-service',
                     ],
                 ],

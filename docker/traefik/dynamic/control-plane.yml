@@ -7,21 +7,18 @@ http:
       entryPoints:
         - web
         - app
-      rule: 'PathPrefix(`/`)'
+      rule: PathPrefix(`/`)
       service: dyzulk-cloud-control-plane-service
-
     dyzulk-cloud-office:
       entryPoints:
         - office
-      rule: 'PathPrefix(`/`)'
+      rule: PathPrefix(`/`)
       service: dyzulk-cloud-control-plane-service
-
     dyzulk-cloud-api:
       entryPoints:
         - api
-      rule: 'PathPrefix(`/`)'
+      rule: PathPrefix(`/`)
       service: dyzulk-cloud-control-plane-service
-
   services:
     dyzulk-cloud-control-plane-service:
       loadBalancer:
