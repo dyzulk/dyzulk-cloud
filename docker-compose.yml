@@ -7,7 +7,7 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP:-1000}'
-        image: 'sail-8.5/app'
+        image: 'dyzulk-cloud-dev-app:latest'
         container_name: dyzulk-cloud-dev-app
         labels:
             com.dyzulk.environment: 'development'
