@@ -11,7 +11,9 @@ abstract class TestCase extends BaseTestCase
     {
         $className = get_class($this);
 
-        if (str_contains($className, 'Tests\\Feature\\Office\\')) {
+        if (str_contains($className, 'Tests\\Feature\\Web\\')) {
+            $_SERVER['SERVER_PORT'] = 8000;
+        } elseif (str_contains($className, 'Tests\\Feature\\Office\\')) {
             $_SERVER['SERVER_PORT'] = 8001;
         } elseif (str_contains($className, 'Tests\\Feature\\Api\\')) {
             $_SERVER['SERVER_PORT'] = 8002;
