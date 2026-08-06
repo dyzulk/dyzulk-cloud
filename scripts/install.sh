@@ -34,7 +34,7 @@
 ##   DOCKER_POOL_SIZE    - Custom Docker address pool size (default: 24)
 ##   SKIP_GVISOR         - Set to "true" to skip gVisor installation
 ##   TRAEFIK_VERSION     - Traefik image tag (default: v3.0)
-##   POSTGRES_VERSION    - PostgreSQL image tag (default: 16-alpine)
+##   POSTGRES_VERSION    - PostgreSQL image tag (default: 18-alpine)
 ##   PANEL_IMAGE         - Control panel Docker image (default: dyzulk/cloud-panel:latest)
 ##
 
