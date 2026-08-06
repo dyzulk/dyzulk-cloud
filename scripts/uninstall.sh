@@ -19,7 +19,7 @@ set -o pipefail
 # Constants
 # ==========================================================================
 DATE=$(date +"%Y%m%d-%H%M%S")
-CONTROL_NETWORK="control-network"
+CONTROL_NETWORK="dyzulk-cloud-control-network"
 DATA_DIR="/data/dyzulk-cloud"
 
 # Initialize FORCE from env variable (useful for curl | FORCE=true bash)
@@ -50,8 +50,17 @@ for arg in "$@"; do
         --force|--yes|-y)
             FORCE=true
             ;;
+        --verbose|-v)
+            VERBOSE=true
+            ;;
     esac
 done
+
+VERBOSE="${VERBOSE:-false}"
+REDIRECT="/dev/null"
+if [ "$VERBOSE" = "true" ]; then
+    REDIRECT="/dev/stdout"
+fi
 
 # ==========================================================================
 # Helper Functions
@@ -136,8 +145,8 @@ preflight() {
 remove_proxy() {
     log_step "Step 1/8: Removing Traefik Reverse Proxy"
 
-    if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^control-proxy$"; then
-        docker rm -f control-proxy > /dev/null 2>&1
+    if docker ps -a --format '{{.Names}}' 2> "$REDIRECT" | grep -q "^dyzulk-cloud-control-ingress$"; then
+        docker rm -f dyzulk-cloud-control-ingress > "$REDIRECT" 2>&1
         log_success "Traefik container removed"
     else
         log_warn "Traefik container not found, skipping"
@@ -151,9 +160,9 @@ remove_proxy() {
 remove_services() {
     log_step "Step 2/8: Removing Swarm Services"
 
-    for svc in control-panel control-postgres; do
-        if docker service ls --format '{{.Name}}' 2>/dev/null | grep -q "^${svc}$"; then
-            docker service rm "$svc" > /dev/null 2>&1
+    for svc in dyzulk-cloud-control-panel dyzulk-cloud-control-postgres; do
+        if docker service ls --format '{{.Name}}' 2> "$REDIRECT" | grep -q "^${svc}$"; then
+            docker service rm "$svc" > "$REDIRECT" 2>&1
             log_success "Service removed: ${svc}"
         else
             log_warn "Service not found: ${svc}, skipping"
@@ -172,8 +181,8 @@ remove_secrets() {
     log_step "Step 3/8: Removing Docker Secrets"
 
     for secret in dyzulk_db_password dyzulk_app_key dyzulk_app_id; do
-        if docker secret ls --format '{{.Name}}' 2>/dev/null | grep -q "^${secret}$"; then
-            docker secret rm "$secret" > /dev/null 2>&1
+        if docker secret ls --format '{{.Name}}' 2> "$REDIRECT" | grep -q "^${secret}$"; then
+            docker secret rm "$secret" > "$REDIRECT" 2>&1
             log_success "Secret removed: ${secret}"
         else
             log_warn "Secret not found: ${secret}, skipping"
@@ -188,8 +197,8 @@ remove_secrets() {
 remove_network() {
     log_step "Step 4/8: Removing Overlay Network"
 
-    if docker network ls --format '{{.Name}}' 2>/dev/null | grep -q "^${CONTROL_NETWORK}$"; then
-        docker network rm "$CONTROL_NETWORK" > /dev/null 2>&1
+    if docker network ls --format '{{.Name}}' 2> "$REDIRECT" | grep -q "^${CONTROL_NETWORK}$"; then
+        docker network rm "$CONTROL_NETWORK" > "$REDIRECT" 2>&1
         log_success "Network removed: ${CONTROL_NETWORK}"
     else
         log_warn "Network not found: ${CONTROL_NETWORK}, skipping"
@@ -203,8 +212,8 @@ remove_network() {
 leave_swarm() {
     log_step "Step 5/8: Leaving Docker Swarm"
 
-    if docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null | grep -q "active"; then
-        docker swarm leave --force > /dev/null 2>&1 || true
+    if docker info --format '{{.Swarm.LocalNodeState}}' 2> "$REDIRECT" | grep -q "active"; then
+        docker swarm leave --force > "$REDIRECT" 2>&1 || true
         log_success "Docker Swarm disbanded"
     else
         log_warn "Server is not part of a Swarm, skipping"
@@ -218,21 +227,21 @@ leave_swarm() {
 remove_volumes() {
     log_step "Step 6/8: Removing Docker Volumes"
 
-    if docker volume ls --format '{{.Name}}' 2>/dev/null | grep -q "^control-postgres-data$"; then
+    if docker volume ls --format '{{.Name}}' 2> "$REDIRECT" | grep -q "^dyzulk-cloud-control-postgres-data$"; then
         echo ""
-        printf "  ${RED}WARNING: Volume 'control-postgres-data' contains your${NC}\n"
+        printf "  ${RED}WARNING: Volume 'dyzulk-cloud-control-postgres-data' contains your${NC}\n"
         printf "  ${RED}database (billing, users, transactions).${NC}\n"
         printf "  ${RED}This action is IRREVERSIBLE.${NC}\n"
         echo ""
 
         if confirm "Delete database volume permanently?"; then
-            docker volume rm control-postgres-data > /dev/null 2>&1
-            log_success "Volume removed: control-postgres-data"
+            docker volume rm dyzulk-cloud-control-postgres-data > "$REDIRECT" 2>&1
+            log_success "Volume removed: dyzulk-cloud-control-postgres-data"
         else
-            log_warn "Volume preserved: control-postgres-data"
+            log_warn "Volume preserved: dyzulk-cloud-control-postgres-data"
         fi
     else
-        log_warn "Volume not found: control-postgres-data, skipping"
+        log_warn "Volume not found: dyzulk-cloud-control-postgres-data, skipping"
     fi
 }
 
@@ -265,7 +274,7 @@ remove_system_configs() {
     # Kernel parameters
     if [ -f /etc/sysctl.d/99-dyzulk-cloud.conf ]; then
         rm -f /etc/sysctl.d/99-dyzulk-cloud.conf
-        sysctl --system > /dev/null 2>&1
+        sysctl --system > "$REDIRECT" 2>&1
         log_success "Kernel parameters restored (removed 99-dyzulk-cloud.conf)"
     else
         log_warn "Kernel config not found, skipping"
@@ -273,12 +282,12 @@ remove_system_configs() {
 
     # Restore daemon.json backup
     local latest_backup
-    latest_backup=$(ls -t /etc/docker/daemon.json.backup-* 2>/dev/null | head -1)
+    latest_backup=$(ls -t /etc/docker/daemon.json.backup-* 2> "$REDIRECT" | head -1)
 
     if [ -n "$latest_backup" ]; then
         if confirm "Restore daemon.json from backup (${latest_backup})?"; then
             cp "$latest_backup" /etc/docker/daemon.json
-            systemctl restart docker > /dev/null 2>&1
+            systemctl restart docker > "$REDIRECT" 2>&1
             log_success "daemon.json restored from ${latest_backup}"
         else
             log_warn "daemon.json left as-is"
@@ -309,10 +318,10 @@ finish() {
     echo "============================================================"
     echo ""
     echo "  The following were cleaned:"
-    echo "    - Traefik container (control-proxy)"
-    echo "    - Swarm services (control-panel, control-postgres)"
+    echo "    - Traefik container (dyzulk-cloud-control-ingress)"
+    echo "    - Swarm services (dyzulk-cloud-control-panel, dyzulk-cloud-control-postgres)"
     echo "    - Docker Secrets (dyzulk_db_password, dyzulk_app_key, dyzulk_app_id)"
-    echo "    - Overlay network (control-network)"
+    echo "    - Overlay network (dyzulk-cloud-control-network)"
     echo "    - Docker Swarm mode"
     echo ""
     echo "  NOTE: Docker Engine itself was NOT removed."

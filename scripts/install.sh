@@ -30,7 +30,7 @@ set -o pipefail
 # ==========================================================================
 DATE=$(date +"%Y%m%d-%H%M%S")
 MIN_DOCKER_VERSION=27
-CONTROL_NETWORK="control-network"
+CONTROL_NETWORK="dyzulk-cloud-control-network"
 DATA_DIR="/data/dyzulk-cloud"
 LOG_DIR="${DATA_DIR}/logs"
 ENV_FILE="${DATA_DIR}/source/.env"
@@ -43,6 +43,23 @@ SKIP_GVISOR="${SKIP_GVISOR:-false}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-v3.0}"
 POSTGRES_VERSION="${POSTGRES_VERSION:-16-alpine}"
 PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
+
+# ==========================================================================
+# Verbose Mode Configuration
+# ==========================================================================
+VERBOSE="${VERBOSE:-false}"
+for arg in "$@"; do
+    case $arg in
+        --verbose|-v)
+            VERBOSE=true
+            ;;
+    esac
+done
+
+REDIRECT="/dev/null"
+if [ "$VERBOSE" = "true" ]; then
+    REDIRECT="/dev/stdout"
+fi
 
 # ==========================================================================
 # Colors
@@ -258,8 +275,8 @@ install_dependencies() {
     done
 
     if [ "$packages_needed" = true ]; then
-        apt-get update -y > /dev/null 2>&1
-        apt-get install -y curl wget jq openssl ca-certificates gnupg lsb-release > /dev/null 2>&1
+        apt-get update -y > "$REDIRECT" 2>&1
+        apt-get install -y curl wget jq openssl ca-certificates gnupg lsb-release > "$REDIRECT" 2>&1
         log_success "Packages installed: curl, wget, jq, openssl, ca-certificates, gnupg"
     else
         log_success "All required packages already installed"
@@ -297,7 +314,7 @@ install_docker() {
 
     # Detect snap-based Docker (incompatible)
     if command_exists snap; then
-        if snap list docker > /dev/null 2>&1; then
+        if snap list docker > "$REDIRECT" 2>&1; then
             log_error "Docker is installed via snap. Please remove it first: snap remove docker"
             exit 1
         fi
@@ -305,23 +322,23 @@ install_docker() {
 
     # Install from official Docker APT repository (Ubuntu 24 specific)
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2> "$REDIRECT"
     chmod a+r /etc/apt/keyrings/docker.gpg
 
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > "$REDIRECT"
 
-    apt-get update -y > /dev/null 2>&1
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin > /dev/null 2>&1
+    apt-get update -y > "$REDIRECT" 2>&1
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin > "$REDIRECT" 2>&1
 
     if ! command_exists docker; then
         log_error "Docker installation failed. Please install manually: https://docs.docker.com/engine/install/ubuntu/"
         exit 1
     fi
 
-    systemctl enable docker > /dev/null 2>&1
-    systemctl start docker > /dev/null 2>&1
+    systemctl enable docker > "$REDIRECT" 2>&1
+    systemctl start docker > "$REDIRECT" 2>&1
 
     log_success "Docker v$(docker version --format '{{.Server.Version}}' 2>/dev/null) installed successfully"
 }
@@ -370,7 +387,7 @@ EOF
     systemctl restart docker
     sleep 2
 
-    if ! docker info > /dev/null 2>&1; then
+    if ! docker info > "$REDIRECT" 2>&1; then
         log_error "Docker daemon failed to start after configuration change"
         exit 1
     fi
@@ -404,7 +421,7 @@ install_gvisor() {
     chmod a+rx /usr/local/bin/runsc /usr/local/bin/containerd-shim-runsc-v1
 
     # Verify installation
-    if ! /usr/local/bin/runsc --version > /dev/null 2>&1; then
+    if ! /usr/local/bin/runsc --version > "$REDIRECT" 2>&1; then
         log_warn "gVisor installed but version check failed. Continuing anyway..."
     else
         log_success "gVisor $(runsc --version 2>&1 | head -1) installed"
@@ -431,7 +448,7 @@ net.ipv4.conf.default.rp_filter=1
 net.netfilter.nf_conntrack_max=131072
 EOF
 
-    sysctl --system > /dev/null 2>&1
+    sysctl --system > "$REDIRECT" 2>&1
 
     log_success "Kernel parameters configured"
 }
@@ -453,7 +470,7 @@ setup_directories_and_secrets() {
     log_success "Directory structure created at ${DATA_DIR}"
 
     # --- Initialize Docker Swarm ---
-    docker swarm leave --force 2>/dev/null || true
+    docker swarm leave --force 2> "$REDIRECT" || true
 
     local advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
 
@@ -477,7 +494,7 @@ setup_directories_and_secrets() {
     log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
 
     # --- Create Overlay Network ---
-    docker network rm -f "$CONTROL_NETWORK" 2>/dev/null || true
+    docker network rm -f "$CONTROL_NETWORK" 2> "$REDIRECT" || true
     docker network create --driver overlay --attachable "$CONTROL_NETWORK"
 
     log_success "Overlay network created: ${CONTROL_NETWORK}"
@@ -489,9 +506,9 @@ setup_directories_and_secrets() {
     app_id=$(openssl rand -hex 16)
 
     # Store in Docker Secrets (encrypted at rest, unlike plaintext .env)
-    echo "$db_password" | docker secret create dyzulk_db_password - 2>/dev/null || true
-    echo "$app_key" | docker secret create dyzulk_app_key - 2>/dev/null || true
-    echo "$app_id" | docker secret create dyzulk_app_id - 2>/dev/null || true
+    echo "$db_password" | docker secret create dyzulk_db_password - 2> "$REDIRECT" || true
+    echo "$app_key" | docker secret create dyzulk_app_key - 2> "$REDIRECT" || true
+    echo "$app_id" | docker secret create dyzulk_app_id - 2> "$REDIRECT" || true
 
     log_success "Docker Secrets created (db_password, app_key, app_id)"
 
@@ -532,7 +549,7 @@ APP_URL=${panel_url}
 
 # Database (Control Plane only)
 DB_CONNECTION=pgsql
-DB_HOST=control-postgres
+DB_HOST=dyzulk-cloud-control-postgres
 DB_PORT=5432
 DB_DATABASE=control_panel
 DB_USERNAME=panel_admin
@@ -567,19 +584,19 @@ deploy_stack() {
     log_step "Step 8/9: Deploying Control Plane Stack (Swarm Services)"
 
     # --- PostgreSQL Service (Control Plane only, no port exposure) ---
-    if docker service ls --format '{{.Name}}' | grep -q "^control-postgres$"; then
+    if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-postgres$"; then
         log "PostgreSQL service already exists, skipping"
     else
         docker service create \
-            --name control-postgres \
+            --name dyzulk-cloud-control-postgres \
             --constraint 'node.role==manager' \
             --network "$CONTROL_NETWORK" \
             --env POSTGRES_DB=control_panel \
             --env POSTGRES_USER=panel_admin \
             --secret source=dyzulk_db_password,target=/run/secrets/db_password \
             --env POSTGRES_PASSWORD_FILE=/run/secrets/db_password \
-            --mount type=volume,source=control-postgres-data,target=/var/lib/postgresql/data \
-            "postgres:${POSTGRES_VERSION}" > /dev/null
+            --mount type=volume,source=dyzulk-cloud-control-postgres-data,target=/var/lib/postgresql/data \
+            "postgres:${POSTGRES_VERSION}" > "$REDIRECT" 2>&1
 
         log_success "PostgreSQL ${POSTGRES_VERSION} service created (internal only, no port exposed)"
     fi
@@ -590,9 +607,9 @@ deploy_stack() {
     local pg_max=90
     while [ $pg_wait -lt $pg_max ]; do
         local pg_container
-        pg_container=$(docker ps --filter name=control-postgres --format '{{.ID}}' | head -1)
+        pg_container=$(docker ps --filter name=dyzulk-cloud-control-postgres --format '{{.ID}}' | head -1)
         if [ -n "$pg_container" ]; then
-            if docker exec "$pg_container" pg_isready -U panel_admin > /dev/null 2>&1; then
+            if docker exec "$pg_container" pg_isready -U panel_admin > "$REDIRECT" 2>&1; then
                 break
             fi
         fi
@@ -602,18 +619,18 @@ deploy_stack() {
 
     if [ $pg_wait -ge $pg_max ]; then
         log_error "PostgreSQL failed to start within ${pg_max} seconds"
-        log_error "Check logs: docker service logs control-postgres"
+        log_error "Check logs: docker service logs dyzulk-cloud-control-postgres"
         exit 1
     fi
 
     log_success "PostgreSQL is ready (took ${pg_wait}s)"
 
     # --- Control Panel Service (Laravel) ---
-    if docker service ls --format '{{.Name}}' | grep -q "^control-panel$"; then
+    if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-panel$"; then
         log "Panel service already exists, skipping"
     else
         docker service create \
-            --name control-panel \
+            --name dyzulk-cloud-control-panel \
             --replicas 1 \
             --constraint 'node.role==manager' \
             --network "$CONTROL_NETWORK" \
@@ -625,13 +642,13 @@ deploy_stack() {
             --publish published="${PANEL_PORT}",target="${PANEL_PORT}",mode=host \
             --update-parallelism 1 \
             --update-order stop-first \
-            -e DB_HOST=control-postgres \
+            -e DB_HOST=dyzulk-cloud-control-postgres \
             -e DB_PORT=5432 \
             -e DB_DATABASE=control_panel \
             -e DB_USERNAME=panel_admin \
             -e DB_PASSWORD_FILE=/run/secrets/db_password \
             -e APP_KEY_FILE=/run/secrets/app_key \
-            "${PANEL_IMAGE}" > /dev/null
+            "${PANEL_IMAGE}" > "$REDIRECT" 2>&1
 
         log_success "Control panel service created (image: ${PANEL_IMAGE})"
     fi
@@ -639,11 +656,11 @@ deploy_stack() {
     # --- Traefik Reverse Proxy (docker run) ---
     # Traefik runs as a regular container (not a Swarm service)
     # because it needs direct host port binding for 80/443
-    if docker ps -a --format '{{.Names}}' | grep -q "^control-proxy$"; then
+    if docker ps -a --format '{{.Names}}' | grep -q "^dyzulk-cloud-control-ingress$"; then
         log "Proxy container already exists, skipping"
     else
         docker run -d \
-            --name control-proxy \
+            --name dyzulk-cloud-control-ingress \
             --restart always \
             -p 80:80/tcp \
             -p 443:443/tcp \
@@ -653,7 +670,7 @@ deploy_stack() {
             "traefik:${TRAEFIK_VERSION}" > /dev/null
 
         # Connect proxy to swarm overlay network
-        docker network connect "$CONTROL_NETWORK" control-proxy 2>/dev/null || true
+        docker network connect "$CONTROL_NETWORK" dyzulk-cloud-control-ingress 2> "$REDIRECT" || true
 
         log_success "Traefik ${TRAEFIK_VERSION} deployed (ports 80/443/443-udp)"
     fi
@@ -670,9 +687,9 @@ health_check_and_finish() {
 
     # Check Swarm services
     local all_healthy=true
-    for svc in control-postgres control-panel; do
+    for svc in dyzulk-cloud-control-postgres dyzulk-cloud-control-panel; do
         local replicas
-        replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
+        replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2> "$REDIRECT")
         if echo "$replicas" | grep -q "1/1"; then
             log_success "${svc} (swarm service): 1/1 replicas running"
         else
@@ -683,19 +700,19 @@ health_check_and_finish() {
 
     # Check Traefik container (regular container, not swarm service)
     local proxy_status
-    proxy_status=$(docker inspect --format='{{.State.Status}}' control-proxy 2>/dev/null || echo "missing")
+    proxy_status=$(docker inspect --format='{{.State.Status}}' dyzulk-cloud-control-ingress 2> "$REDIRECT" || echo "missing")
     if [ "$proxy_status" = "running" ]; then
-        log_success "control-proxy (container): running"
+        log_success "dyzulk-cloud-control-ingress (container): running"
     else
-        log_error "control-proxy (container): ${proxy_status}"
+        log_error "dyzulk-cloud-control-ingress (container): ${proxy_status}"
         all_healthy=false
     fi
 
     if [ "$all_healthy" = false ]; then
         log_error "Some services failed to start. Check logs:"
-        echo "  docker service logs control-postgres"
-        echo "  docker service logs control-panel"
-        echo "  docker logs control-proxy"
+        echo "  docker service logs dyzulk-cloud-control-postgres"
+        echo "  docker service logs dyzulk-cloud-control-panel"
+        echo "  docker logs dyzulk-cloud-control-ingress"
         exit 1
     fi
 
