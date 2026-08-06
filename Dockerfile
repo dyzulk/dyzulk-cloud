@@ -3,15 +3,14 @@
 ################################################################################
 FROM dunglas/frankenphp:php8.5-alpine AS frontend
 
-# Copy Node.js from official Node alpine image
-COPY --from=node:24-alpine /usr/local /usr/local
-# Copy Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install Node.js, npm, and pnpm
+RUN apk add --no-cache nodejs npm && npm install -g pnpm
 
 WORKDIR /app
 
-# Enable corepack for pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Copy PHP dependencies configuration and install (needed by Wayfinder)
 COPY composer.json composer.lock ./
