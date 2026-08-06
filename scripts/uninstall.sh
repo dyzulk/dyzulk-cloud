@@ -235,8 +235,23 @@ remove_volumes() {
         echo ""
 
         if confirm "Delete database volume permanently?"; then
-            docker volume rm dyzulk-cloud-control-postgres-data > "$REDIRECT" 2>&1
-            log_success "Volume removed: dyzulk-cloud-control-postgres-data"
+            local rm_success=false
+            local volume_wait=0
+            local volume_max=15
+            log "Attempting to remove volume..."
+            while [ $volume_wait -lt $volume_max ]; do
+                if docker volume rm dyzulk-cloud-control-postgres-data > "$REDIRECT" 2>&1; then
+                    rm_success=true
+                    break
+                fi
+                sleep 2
+                volume_wait=$((volume_wait + 2))
+            done
+            if [ "$rm_success" = true ]; then
+                log_success "Volume removed: dyzulk-cloud-control-postgres-data"
+            else
+                log_error "Failed to remove volume dyzulk-cloud-control-postgres-data (it may still be in use by a stopping container)"
+            fi
         else
             log_warn "Volume preserved: dyzulk-cloud-control-postgres-data"
         fi
