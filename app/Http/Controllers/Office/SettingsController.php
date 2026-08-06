@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Office;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Services\TraefikConfigService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -99,6 +100,10 @@ class SettingsController extends Controller
         };
 
         SiteSetting::setGroup($group, $data);
+
+        if (in_array($group, ['general', 'network'], true)) {
+            TraefikConfigService::syncControlPlaneRoutes();
+        }
 
         return redirect()->back()->with('success', ucfirst($group).' settings updated successfully.');
     }

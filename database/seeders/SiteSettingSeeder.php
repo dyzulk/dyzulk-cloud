@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\SiteSetting;
+use App\Services\TraefikConfigService;
 use Illuminate\Database\Seeder;
 
 class SiteSettingSeeder extends Seeder
@@ -68,5 +69,7 @@ class SiteSettingSeeder extends Seeder
                 SiteSetting::set($key, $val, $group, $type);
             }
         }
+
+        TraefikConfigService::syncControlPlaneRoutes();
     }
 }

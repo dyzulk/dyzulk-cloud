@@ -13,10 +13,6 @@ services:
             com.dyzulk.environment: 'development'
             com.dyzulk.service: 'sail'
             com.dyzulk.app: 'dyzulk-cloud'
-            traefik.enable: 'true'
-            traefik.http.routers.dyzulk-cloud.rule: 'Host(`office.localhost`) || Host(`dyzulk.localhost`) || Host(`office.dyzulk.test`) || Host(`dyzulk.test`) || HostRegexp(`^[a-z0-9-]+\.dyzulk\.test$`) || Host(`localhost`) || Host(`127.0.0.1`)'
-            traefik.http.routers.dyzulk-cloud.entrypoints: 'web'
-            traefik.http.services.dyzulk-cloud.loadbalancer.server.port: '80'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -39,6 +35,8 @@ services:
             - '--api.insecure=true'
             - '--providers.docker=true'
             - '--providers.docker.exposedbydefault=false'
+            - '--providers.file.directory=/etc/traefik/dynamic'
+            - '--providers.file.watch=true'
             - '--entrypoints.web.address=:80'
             - '--entrypoints.websecure.address=:443'
         environment:
@@ -49,6 +47,7 @@ services:
             - '${TRAEFIK_DASHBOARD_PORT:-8080}:8080'
         volumes:
             - '/var/run/docker.sock:/var/run/docker.sock:ro'
+            - './docker/traefik/dynamic:/etc/traefik/dynamic'
         networks:
             - sail-dev
 
