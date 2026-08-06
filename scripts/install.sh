@@ -484,7 +484,7 @@ setup_directories_and_secrets() {
         exit 1
     fi
 
-    docker swarm init --advertise-addr "$advertise_addr"
+    docker swarm init --advertise-addr "$advertise_addr" > "$REDIRECT" 2>&1
 
     if [ $? -ne 0 ]; then
         log_error "Failed to initialize Docker Swarm"
@@ -495,7 +495,7 @@ setup_directories_and_secrets() {
 
     # --- Create Overlay Network ---
     docker network rm -f "$CONTROL_NETWORK" 2> "$REDIRECT" || true
-    docker network create --driver overlay --attachable "$CONTROL_NETWORK"
+    docker network create --driver overlay --attachable "$CONTROL_NETWORK" > "$REDIRECT" 2>&1
 
     log_success "Overlay network created: ${CONTROL_NETWORK}"
 
@@ -506,9 +506,9 @@ setup_directories_and_secrets() {
     app_id=$(openssl rand -hex 16)
 
     # Store in Docker Secrets (encrypted at rest, unlike plaintext .env)
-    echo "$db_password" | docker secret create dyzulk_db_password - 2> "$REDIRECT" || true
-    echo "$app_key" | docker secret create dyzulk_app_key - 2> "$REDIRECT" || true
-    echo "$app_id" | docker secret create dyzulk_app_id - 2> "$REDIRECT" || true
+    echo "$db_password" | docker secret create dyzulk_db_password - > "$REDIRECT" 2>&1 || true
+    echo "$app_key" | docker secret create dyzulk_app_key - > "$REDIRECT" 2>&1 || true
+    echo "$app_id" | docker secret create dyzulk_app_id - > "$REDIRECT" 2>&1 || true
 
     log_success "Docker Secrets created (db_password, app_key, app_id)"
 
