@@ -441,7 +441,9 @@ install_gvisor() {
     if ! /usr/local/bin/runsc --version > /dev/null 2>&1; then
         log_warn "gVisor installed but version check failed. Continuing anyway..."
     else
-        log_success "gVisor $(runsc --version 2>&1 | head -1) installed"
+        local runsc_ver
+        runsc_ver=$(runsc --version 2>&1 | head -1)
+        log_success "gVisor ${runsc_ver} installed"
     fi
 }
 
@@ -606,6 +608,7 @@ deploy_stack() {
     else
         log "Deploying PostgreSQL ${POSTGRES_VERSION} service..."
         docker service create \
+            --detach \
             --name dyzulk-cloud-control-postgres \
             --constraint 'node.role==manager' \
             --network "$CONTROL_NETWORK" \
@@ -614,7 +617,7 @@ deploy_stack() {
             --secret source=dyzulk_db_password,target=/run/secrets/db_password \
             --env POSTGRES_PASSWORD_FILE=/run/secrets/db_password \
             --mount type=volume,source=dyzulk-cloud-control-postgres-data,target=/var/lib/postgresql/data \
-            "postgres:${POSTGRES_VERSION}" > "$REDIRECT" 2>&1
+            "postgres:${POSTGRES_VERSION}" > /dev/null 2>&1
 
         log_success "PostgreSQL ${POSTGRES_VERSION} service created (internal only, no port exposed)"
     fi
@@ -650,6 +653,7 @@ deploy_stack() {
     else
         log "Deploying Control Panel service (${PANEL_IMAGE})..."
         docker service create \
+            --detach \
             --name dyzulk-cloud-control-panel \
             --replicas 1 \
             --constraint 'node.role==manager' \
@@ -668,7 +672,7 @@ deploy_stack() {
             -e DB_USERNAME=panel_admin \
             -e DB_PASSWORD_FILE=/run/secrets/db_password \
             -e APP_KEY_FILE=/run/secrets/app_key \
-            "${PANEL_IMAGE}" > "$REDIRECT" 2>&1
+            "${PANEL_IMAGE}" > /dev/null 2>&1
 
         log_success "Control panel service created (image: ${PANEL_IMAGE})"
     fi
