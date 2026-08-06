@@ -12,11 +12,9 @@
 ##   # Verbose installation (show detailed progress logs)
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --verbose
 ##
-##   # Installation with custom environment variables
-##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash
-##
-##   # Combined options (custom variables + verbose mode)
-##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash -s -- --verbose
+##   # Update Control Panel image to latest version
+##   sudo bash install.sh --update-panel
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --update-panel
 ##
 ##   # Edit / Re-configure existing installation (update domains, ports, or environment)
 ##   sudo bash install.sh --edit
@@ -65,6 +63,7 @@ PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 # ==========================================================================
 VERBOSE="${VERBOSE:-false}"
 EDIT_MODE="${EDIT_MODE:-false}"
+UPDATE_MODE="${UPDATE_MODE:-false}"
 for arg in "$@"; do
     case $arg in
         --verbose)
@@ -72,6 +71,9 @@ for arg in "$@"; do
             ;;
         --edit|-e)
             EDIT_MODE=true
+            ;;
+        --update-panel|--update-image|--update|-u)
+            UPDATE_MODE=true
             ;;
     esac
 done
@@ -243,8 +245,8 @@ preflight_checks() {
     log_success "OS verified: Ubuntu ${os_version}"
 
     # Port checks
-    if [ "$EDIT_MODE" = "true" ]; then
-        log_success "Edit mode active (--edit): Bypassing strict port blockage check for existing installation update"
+    if [ "$EDIT_MODE" = "true" ] || [ "$UPDATE_MODE" = "true" ]; then
+        log_success "Update/Edit mode active: Bypassing strict port blockage check for existing installation"
     else
         local ports_in_use=""
         if ss -tulnp | grep -q ':80 '; then
@@ -259,7 +261,7 @@ preflight_checks() {
 
         if [ -n "$ports_in_use" ]; then
             log_error "The following ports are already in use:${ports_in_use}"
-            log_error "Please stop the services using these ports or run with --edit (or -e) to update an existing installation."
+            log_error "Please stop the services using these ports, or run with --update-panel to update the Control Panel image, or --edit to re-configure."
             exit 1
         fi
 
@@ -669,9 +671,13 @@ deploy_stack() {
     # --- Control Panel Service (Laravel) ---
     local target_app_domain="${PANEL_DOMAIN:-localhost}"
     if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-panel$"; then
-        if [ "$EDIT_MODE" = "true" ]; then
-            log "Updating Control Panel service (--edit mode active)..."
+        if [ "$UPDATE_MODE" = "true" ] || [ "$EDIT_MODE" = "true" ]; then
+            log "Pulling latest Control Panel image (${PANEL_IMAGE})..."
+            docker pull "${PANEL_IMAGE}" > "$REDIRECT" 2>&1 || true
+
+            log "Updating Control Panel service image and environment..."
             docker service update \
+                --image "${PANEL_IMAGE}" \
                 --env-add APP_DOMAIN="${target_app_domain}" \
                 --env-add API_DOMAIN="api.${target_app_domain}" \
                 --env-add OFFICE_DOMAIN="office.${target_app_domain}" \
@@ -679,11 +685,16 @@ deploy_stack() {
                 --env-add APP_URL="${panel_url}" \
                 --force \
                 dyzulk-cloud-control-panel > /dev/null 2>&1
-            log_success "Control panel service updated successfully (--edit mode)"
+
+            docker image prune -f > /dev/null 2>&1 || true
+            log_success "Control panel service updated successfully to latest image (${PANEL_IMAGE})"
         else
-            log "Panel service already exists, skipping (pass --edit or -e to update)"
+            log "Panel service already exists, skipping (pass --update-panel to update image, or --edit to re-configure)"
         fi
     else
+        log "Pulling Control Panel image (${PANEL_IMAGE})..."
+        docker pull "${PANEL_IMAGE}" > "$REDIRECT" 2>&1 || true
+
         log "Deploying Control Panel service (${PANEL_IMAGE})..."
         docker service create \
             --detach \
@@ -719,12 +730,12 @@ deploy_stack() {
     # Traefik runs as a regular container (not a Swarm service)
     # because it needs direct host port binding for 80/443
     if docker ps -a --format '{{.Names}}' | grep -q "^dyzulk-cloud-control-ingress$"; then
-        if [ "$EDIT_MODE" = "true" ]; then
-            log "Restarting Traefik Reverse Proxy (--edit mode active)..."
+        if [ "$UPDATE_MODE" = "true" ] || [ "$EDIT_MODE" = "true" ]; then
+            log "Restarting Traefik Reverse Proxy..."
             docker restart dyzulk-cloud-control-ingress > /dev/null 2>&1 || true
-            log_success "Traefik Reverse Proxy restarted (--edit mode)"
+            log_success "Traefik Reverse Proxy restarted"
         else
-            log "Proxy container already exists, skipping (pass --edit or -e to update)"
+            log "Proxy container already exists, skipping (pass --update-panel or --edit to refresh)"
         fi
     else
         log "Deploying Traefik Reverse Proxy (image: traefik:${TRAEFIK_VERSION})..."
