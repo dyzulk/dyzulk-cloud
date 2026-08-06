@@ -36,9 +36,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/api.php'));
 
             // Office dashboard routes
-            Route::middleware('office')
-                ->domain($officeDomain)
-                ->group(base_path('routes/office.php'));
+            Route::middleware('office')->group(function () use ($officeDomain) {
+                Route::domain($officeDomain)->group(base_path('routes/office.php'));
+                if ($officeDomain !== 'office.localhost') {
+                    Route::domain('office.localhost')->group(base_path('routes/office.php'));
+                }
+                Route::domain('office.{domain}')->group(base_path('routes/office.php'));
+            });
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

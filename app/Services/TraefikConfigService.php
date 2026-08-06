@@ -26,23 +26,12 @@ class TraefikConfigService
         $parsedHost = parse_url($instanceUrl, PHP_URL_HOST);
         if ($parsedHost) {
             $hostRules[] = "Host(`{$parsedHost}`)";
-            $officeHost = 'office.'.$parsedHost;
-            $hostRules[] = "Host(`{$officeHost}`)";
-        }
-
-        // Parse wildcard domain
-        if (! empty($wildcardDomain)) {
-            $cleanDomain = ltrim($wildcardDomain, '*.');
-            if ($cleanDomain) {
-                $hostRules[] = "Host(`{$cleanDomain}`)";
-                $hostRules[] = "Host(`office.{$cleanDomain}`)";
-                $regexDomain = preg_quote($cleanDomain, '/');
-                $hostRules[] = "HostRegexp(`^[a-z0-9-]+\\.{$regexDomain}$`)";
-            }
+            $hostRules[] = "Host(`office.{$parsedHost}`)";
+            $hostRules[] = "Host(`api.{$parsedHost}`)";
         }
 
         // Deduplicate host rules
-        $hostRules = array_unique($hostRules);
+        $hostRules = array_unique(array_values($hostRules));
         $ruleString = implode(' || ', $hostRules);
 
         $targetServiceHost = env('TRAEFIK_TARGET_SERVICE', 'dyzulk-cloud-dev-app');
