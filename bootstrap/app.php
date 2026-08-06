@@ -42,6 +42,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     Route::domain('office.localhost')->group(base_path('routes/office.php'));
                 }
                 Route::domain('office.{domain}')->group(base_path('routes/office.php'));
+
+                // Direct IP / Path Fallback
+                Route::prefix('office')->group(base_path('routes/office.php'));
             });
         },
     )

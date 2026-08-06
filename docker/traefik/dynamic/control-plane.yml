@@ -6,7 +6,7 @@ http:
     dyzulk-cloud-control-plane:
       entryPoints:
         - web
-      rule: 'Host(`localhost`) || Host(`127.0.0.1`) || Host(`office.localhost`) || Host(`dyzulk.test`) || Host(`office.dyzulk.test`) || Host(`api.dyzulk.test`)'
+      rule: 'Host(`localhost`) || Host(`127.0.0.1`) || Host(`office.localhost`) || Host(`api.localhost`)'
       service: dyzulk-cloud-control-plane-service
   services:
     dyzulk-cloud-control-plane-service:
