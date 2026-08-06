@@ -537,13 +537,13 @@ setup_directories_and_secrets() {
             log_error "Cannot detect server IP. Set ADVERTISE_ADDR manually."
             exit 1
         fi
-        docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1
+        docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1 || true
         log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
     fi
 
     # --- Create Overlay Network ---
     if ! docker network ls --format '{{.Name}}' 2>/dev/null | grep -q "^${CONTROL_NETWORK}$"; then
-        docker network create --driver overlay --attachable "$CONTROL_NETWORK" > /dev/null 2>&1
+        docker network create --driver overlay --attachable "$CONTROL_NETWORK" > /dev/null 2>&1 || true
         log_success "Overlay network created: ${CONTROL_NETWORK}"
     else
         log_success "Overlay network already exists: ${CONTROL_NETWORK}"
