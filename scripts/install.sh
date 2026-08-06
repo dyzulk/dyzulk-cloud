@@ -602,6 +602,7 @@ deploy_stack() {
     if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-postgres$"; then
         log "PostgreSQL service already exists, skipping"
     else
+        log "Deploying PostgreSQL ${POSTGRES_VERSION} service..."
         docker service create \
             --name dyzulk-cloud-control-postgres \
             --constraint 'node.role==manager' \
@@ -618,6 +619,7 @@ deploy_stack() {
 
     # Wait for PostgreSQL to be ready
     log "Waiting for PostgreSQL to accept connections..."
+    local start_time=$(date +%s)
     local pg_wait=0
     local pg_max=90
     while [ $pg_wait -lt $pg_max ]; do
@@ -629,7 +631,7 @@ deploy_stack() {
             fi
         fi
         sleep 3
-        pg_wait=$((pg_wait + 3))
+        pg_wait=$(( $(date +%s) - start_time ))
     done
 
     if [ $pg_wait -ge $pg_max ]; then
@@ -644,6 +646,7 @@ deploy_stack() {
     if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-panel$"; then
         log "Panel service already exists, skipping"
     else
+        log "Deploying Control Panel service (${PANEL_IMAGE})..."
         docker service create \
             --name dyzulk-cloud-control-panel \
             --replicas 1 \
@@ -674,6 +677,7 @@ deploy_stack() {
     if docker ps -a --format '{{.Names}}' | grep -q "^dyzulk-cloud-control-ingress$"; then
         log "Proxy container already exists, skipping"
     else
+        log "Deploying Traefik Reverse Proxy (image: traefik:${TRAEFIK_VERSION})..."
         docker run -d \
             --name dyzulk-cloud-control-ingress \
             --restart always \
