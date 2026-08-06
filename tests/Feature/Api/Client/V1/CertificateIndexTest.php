@@ -42,7 +42,7 @@ test('index returns 404 for an invalid UUID', function () {
     $token = $user->createToken('test', ['ssl:read'])->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
-        ->getJson('http://'.config('app.api.domain').'/client/v1/teams/00000000-0000-0000-0000-000000000000/certificates');
+        ->getJson(config('app.api.url').'/client/v1/teams/00000000-0000-0000-0000-000000000000/certificates');
 
     $response->assertNotFound();
 });

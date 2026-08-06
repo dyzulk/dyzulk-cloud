@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             $port = (int) (request()->getPort() ?: request()->server('SERVER_PORT', 8000));
 
-            // Port 8002 -> REST API
+            // Port 8002 -> REST API at root
             if ($port === 8002) {
                 Route::middleware('api')
                     ->group(base_path('routes/api.php'));
@@ -39,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->group(base_path('routes/api.php'));
             }
 
-            // Port 8001 -> Office Dashboard
+            // Port 8001 -> Office Dashboard at root
             if ($port === 8001) {
                 Route::middleware('office')
                     ->group(base_path('routes/office.php'));
