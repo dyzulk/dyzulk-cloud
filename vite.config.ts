@@ -5,6 +5,15 @@ import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
+import { execSync } from 'child_process';
+
+let hasPhp = false;
+try {
+    execSync('php -v', { stdio: 'ignore' });
+    hasPhp = true;
+} catch {
+    // PHP is not available
+}
 
 export default defineConfig({
     plugins: [
@@ -29,8 +38,8 @@ export default defineConfig({
             },
         }),
         tailwindcss(),
-        wayfinder({
+        hasPhp ? wayfinder({
             formVariants: true,
-        }),
-    ],
+        }) : undefined,
+    ].filter(Boolean),
 });
