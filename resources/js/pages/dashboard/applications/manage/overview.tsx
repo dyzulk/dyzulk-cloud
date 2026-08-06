@@ -125,7 +125,7 @@ export default function Overview({ application }: Props) {
             {/* Network & Architecture Topology Diagram */}
             <div className="relative w-full rounded-base border-2 border-border bg-secondary-background p-6 md:p-8 overflow-hidden shadow-shadow">
                 {/* Background Grid Pattern */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] text-foreground/20 bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 md:gap-0 relative z-10">
                     

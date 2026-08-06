@@ -24,29 +24,29 @@ function CopyableField({
     const isCopied = copiedText === value;
 
     return (
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 font-base">
             <label
                 htmlFor={id}
-                className="text-xs font-medium text-muted-foreground"
+                className="text-xs font-bold uppercase tracking-wider text-foreground/70"
             >
                 {label}
             </label>
-            <div className="flex items-stretch overflow-hidden rounded-md border border-border">
+            <div className="flex items-stretch overflow-hidden rounded-base border-2 border-border shadow-shadow bg-background">
                 <input
                     id={id}
                     type="text"
                     readOnly
                     value={value}
-                    className="h-full w-full bg-muted/50 px-3 py-2 font-mono text-xs text-foreground outline-none"
+                    className="h-full w-full bg-background px-3 py-2 font-mono text-xs text-foreground outline-none"
                 />
                 <button
                     type="button"
                     onClick={() => copy(value)}
-                    className="flex shrink-0 items-center border-l border-border px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="flex shrink-0 items-center border-l-2 border-border px-2.5 text-foreground/70 transition-colors hover:bg-main hover:text-main-foreground"
                     data-test={`copy-${id}`}
                 >
                     {isCopied ? (
-                        <Check className="size-3.5 text-green-500" />
+                        <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                     ) : (
                         <Copy className="size-3.5" />
                     )}
@@ -62,20 +62,20 @@ export default function Dashboard() {
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4 lg:flex-row">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-base p-4 lg:flex-row font-base">
                 <div className="flex flex-1 flex-col gap-4">
                     <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                        <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        <div className="relative aspect-video overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow">
                             <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         </div>
-                        <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        <div className="relative aspect-video overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow">
                             <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         </div>
-                        <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                        <div className="relative aspect-video overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow">
                             <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         </div>
                     </div>
-                    <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
+                    <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-base border-2 border-border bg-secondary-background shadow-shadow md:min-h-min">
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                     </div>
                 </div>
@@ -83,7 +83,7 @@ export default function Dashboard() {
                 <div className="w-full shrink-0 lg:w-72">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm">
+                            <CardTitle className="text-base font-heading font-bold">
                                 Identifiers
                             </CardTitle>
                         </CardHeader>
@@ -108,11 +108,12 @@ export default function Dashboard() {
     );
 }
 
-Dashboard.layout = (props: { currentTeam?: { slug: string } | null }) => ({
+Dashboard.layout = {
     breadcrumbs: [
         {
             title: 'Dashboard',
-            href: props.currentTeam ? dashboard(props.currentTeam.slug) : '/',
+            href: (props: PageProps) =>
+                props.currentTeam ? dashboard(props.currentTeam.slug) : '/',
         },
     ],
-});
+};

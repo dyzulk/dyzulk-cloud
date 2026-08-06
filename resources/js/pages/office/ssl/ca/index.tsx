@@ -78,9 +78,9 @@ const StatusItem = ({
 }) => (
     <div
         onClick={() => onClick(type)}
-        className="flex cursor-pointer items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
+        className="flex cursor-pointer items-center justify-between rounded-base border-2 border-border shadow-shadow bg-secondary-background p-3 transition-transform hover:-translate-y-0.5"
     >
-        <span className="text-sm font-medium">{caTypeLabels[type]}</span>
+        <span className="text-sm font-heading font-bold">{caTypeLabels[type]}</span>
         {isReady ? (
             <CheckCircle2 className="h-5 w-5 text-green-500" />
         ) : (
@@ -250,7 +250,7 @@ export default function CaIndex({
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="overflow-x-auto rounded-md border">
+                                <div className="overflow-x-auto rounded-base border-2 border-border shadow-shadow">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>

@@ -106,20 +106,20 @@ export default function ApplicationsOverview({ recentlyDeployed, latestDeploymen
                                 href={`/${teamSlug}/applications/${recentlyDeployed.name}/overview`}
                                 className="group block"
                             >
-                                <Card className="border-border/80 p-6 shadow-xs transition-all hover:border-primary/50 hover:shadow-md h-full">
+                                <Card className="border-2 border-border p-6 shadow-shadow bg-secondary-background hover:-translate-y-0.5 transition-transform h-full">
                                     <div className="flex items-start justify-between mb-6">
                                         <div className="flex items-center space-x-3">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-base bg-main border-2 border-border shadow-shadow text-main-foreground transition-colors">
                                                 <Box className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-base">
+                                                <h3 className="font-heading font-bold text-foreground group-hover:text-main transition-colors text-base">
                                                     {recentlyDeployed.name}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <Badge
                                                         variant="secondary"
-                                                        className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px]"
+                                                        className="bg-main text-main-foreground font-bold border-2 border-border text-[11px]"
                                                     >
                                                         {recentlyDeployed.environment}
                                                     </Badge>
@@ -129,18 +129,18 @@ export default function ApplicationsOverview({ recentlyDeployed, latestDeploymen
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3 text-sm text-muted-foreground">
+                                    <div className="space-y-3 text-sm text-foreground/80 font-base">
                                         <div className="flex items-center gap-2">
                                             <GitBranch className="h-4 w-4" />
                                             <span>{recentlyDeployed.repository_name || 'No Repository'}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-xs">
-                                            <Globe className="h-4 w-4 text-muted-foreground/70" />
+                                            <Globe className="h-4 w-4 text-foreground/70" />
                                             <span>Domain active</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-xs">
-                                            <Server className="h-4 w-4 text-muted-foreground/70" />
-                                            <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded text-[10px]">
+                                            <Server className="h-4 w-4 text-foreground/70" />
+                                            <span className="font-mono bg-background border-2 border-border px-1.5 py-0.5 rounded-base text-[10px]">
                                                 {recentlyDeployed.branch}
                                             </span>
                                             <span>•</span>
@@ -150,10 +150,10 @@ export default function ApplicationsOverview({ recentlyDeployed, latestDeploymen
                                 </Card>
                             </Link>
                         ) : (
-                            <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-6 text-center md:col-span-2">
-                                <Box className="h-8 w-8 text-muted-foreground/60 mb-2" />
-                                <p className="text-sm text-muted-foreground">No applications found.</p>
-                                <Button asChild size="sm" className="mt-3 bg-neutral-900 text-xs text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200">
+                            <div className="flex min-h-[160px] flex-col items-center justify-center rounded-base border-2 border-dashed border-border bg-secondary-background p-6 shadow-shadow text-center md:col-span-2">
+                                <Box className="h-8 w-8 text-foreground/60 mb-2" />
+                                <p className="text-sm font-base text-foreground/70">No applications found.</p>
+                                <Button asChild size="sm" className="mt-3 shadow-shadow font-heading font-bold">
                                     <Link href={`/${teamSlug}/applications/create`}>
                                         <Plus className="h-4 w-4 mr-1.5" />
                                         Create Application
@@ -170,9 +170,9 @@ export default function ApplicationsOverview({ recentlyDeployed, latestDeploymen
                     </h2>
                     
                     {latestDeployments.length === 0 ? (
-                        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
-                            <Layers className="h-8 w-8 text-muted-foreground/60 mb-3" />
-                            <p className="text-sm text-muted-foreground">
+                        <div className="flex min-h-[200px] flex-col items-center justify-center rounded-base border-2 border-dashed border-border bg-secondary-background p-8 shadow-shadow text-center">
+                            <Layers className="h-8 w-8 text-foreground/60 mb-3" />
+                            <p className="text-sm font-base text-foreground/70">
                                 No deployments found.
                             </p>
                         </div>

@@ -24,7 +24,7 @@ export default function TeamsIndex({ teams }: Props) {
 
             <h1 className="sr-only">Teams</h1>
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-base p-4 font-base">
                 <div className="flex flex-col space-y-6">
                     <div className="flex items-center justify-between">
                         <Heading
@@ -34,7 +34,7 @@ export default function TeamsIndex({ teams }: Props) {
                         />
 
                         <CreateTeamModal>
-                            <Button data-test="teams-new-team-button">
+                            <Button data-test="teams-new-team-button" className="shadow-shadow font-heading font-bold">
                                 <Plus /> New team
                             </Button>
                         </CreateTeamModal>
@@ -45,7 +45,7 @@ export default function TeamsIndex({ teams }: Props) {
                             <div
                                 key={team.id}
                                 data-test="team-row"
-                                className="flex items-center justify-between rounded-lg border p-4"
+                                className="flex items-center justify-between rounded-base border-2 border-border shadow-shadow bg-secondary-background p-4"
                             >
                                 <div className="flex items-center gap-4">
                                     <div>
