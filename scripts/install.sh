@@ -187,7 +187,11 @@ get_private_ip() {
 
 get_panel_url() {
     if [ -n "$PANEL_DOMAIN" ]; then
-        echo "https://${PANEL_DOMAIN}"
+        if echo "$PANEL_DOMAIN" | grep -qE "^https?://"; then
+            echo "${PANEL_DOMAIN}"
+        else
+            echo "http://${PANEL_DOMAIN}:${PANEL_PORT}"
+        fi
     else
         local pub_ip
         local priv_ip
