@@ -19,10 +19,12 @@ return [
     */
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s',
+        '%s%s%s%s%s',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
         Sanctum::currentApplicationUrlWithPort(),
-        // Sanctum::currentRequestHost(),
+        env('APP_DOMAIN') ? ','.env('APP_DOMAIN') : '',
+        env('OFFICE_DOMAIN') ? ','.env('OFFICE_DOMAIN') : '',
+        env('API_DOMAIN') ? ','.env('API_DOMAIN') : '',
     ))),
 
     /*

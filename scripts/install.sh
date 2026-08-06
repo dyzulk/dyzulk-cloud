@@ -592,6 +592,7 @@ APP_DOMAIN=${target_app_domain}
 API_DOMAIN=api.${target_app_domain}
 OFFICE_DOMAIN=office.${target_app_domain}
 SESSION_DOMAIN=.${target_app_domain}
+SANCTUM_STATEFUL_DOMAINS="${target_app_domain},office.${target_app_domain},api.${target_app_domain}"
 
 # Database (Control Plane only)
 DB_CONNECTION=pgsql
@@ -691,6 +692,7 @@ deploy_stack() {
                 --env-add API_DOMAIN="api.${target_app_domain}" \
                 --env-add OFFICE_DOMAIN="office.${target_app_domain}" \
                 --env-add SESSION_DOMAIN=".${target_app_domain}" \
+                --env-add SANCTUM_STATEFUL_DOMAINS="${target_app_domain},office.${target_app_domain},api.${target_app_domain}" \
                 --env-add APP_URL="${panel_url}" \
                 --force \
                 dyzulk-cloud-control-panel > /dev/null 2>&1
@@ -729,6 +731,7 @@ deploy_stack() {
             -e API_DOMAIN="api.${target_app_domain}" \
             -e OFFICE_DOMAIN="office.${target_app_domain}" \
             -e SESSION_DOMAIN=".${target_app_domain}" \
+            -e SANCTUM_STATEFUL_DOMAINS="${target_app_domain},office.${target_app_domain},api.${target_app_domain}" \
             -e APP_URL="${panel_url}" \
             "${PANEL_IMAGE}" > /dev/null 2>&1
 
@@ -995,6 +998,7 @@ APP_DOMAIN=${target_app_domain}
 API_DOMAIN=api.${target_app_domain}
 OFFICE_DOMAIN=office.${target_app_domain}
 SESSION_DOMAIN=.${target_app_domain}
+SANCTUM_STATEFUL_DOMAINS="${target_app_domain},office.${target_app_domain},api.${target_app_domain}"
 
 DB_CONNECTION=pgsql
 DB_HOST=dyzulk-cloud-control-postgres
@@ -1016,6 +1020,7 @@ EOF
             --env-add API_DOMAIN="api.${target_app_domain}" \
             --env-add OFFICE_DOMAIN="office.${target_app_domain}" \
             --env-add SESSION_DOMAIN=".${target_app_domain}" \
+            --env-add SANCTUM_STATEFUL_DOMAINS="${target_app_domain},office.${target_app_domain},api.${target_app_domain}" \
             --env-add APP_URL="${panel_url}" \
             --force \
             dyzulk-cloud-control-panel > /dev/null 2>&1
