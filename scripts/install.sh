@@ -18,10 +18,9 @@
 ##   # Combined options (custom variables + verbose mode)
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash -s -- --verbose
 ##
-##   # Local file installation
-##   sudo bash install.sh
-##   sudo bash install.sh --verbose
-##   sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash install.sh --verbose
+##   # Edit / Re-configure existing installation (update domains, ports, or environment)
+##   sudo bash install.sh --edit
+##   sudo PANEL_DOMAIN=my-domain.com bash install.sh --edit
 ##
 ## Environment variables:
 ##   PANEL_DOMAIN        - Domain for the control panel (default: auto-detect IP)
@@ -60,15 +59,19 @@ POSTGRES_VERSION="${POSTGRES_VERSION:-16-alpine}"
 PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 
 # ==========================================================================
-# Verbose Mode Configuration
+# Verbose and Edit Mode Configuration
 # NOTE: Do NOT use -v shortcut. It conflicts with bash's built-in -v flag
 #       which prints raw script lines to terminal.
 # ==========================================================================
 VERBOSE="${VERBOSE:-false}"
+EDIT_MODE="${EDIT_MODE:-false}"
 for arg in "$@"; do
     case $arg in
         --verbose)
             VERBOSE=true
+            ;;
+        --edit|-e)
+            EDIT_MODE=true
             ;;
     esac
 done
@@ -171,6 +174,24 @@ get_private_ip() {
         | head -n1
 }
 
+get_panel_url() {
+    if [ -n "$PANEL_DOMAIN" ]; then
+        echo "https://${PANEL_DOMAIN}"
+    else
+        local pub_ip
+        local priv_ip
+        pub_ip=$(get_public_ip)
+        priv_ip=$(get_private_ip)
+        if [ -n "$pub_ip" ]; then
+            echo "http://${pub_ip}:${PANEL_PORT}"
+        elif [ -n "$priv_ip" ]; then
+            echo "http://${priv_ip}:${PANEL_PORT}"
+        else
+            echo "http://localhost:${PANEL_PORT}"
+        fi
+    fi
+}
+
 # ==========================================================================
 # Pre-flight Checks
 # ==========================================================================
@@ -222,24 +243,28 @@ preflight_checks() {
     log_success "OS verified: Ubuntu ${os_version}"
 
     # Port checks
-    local ports_in_use=""
-    if ss -tulnp | grep -q ':80 '; then
-        ports_in_use="${ports_in_use} 80"
-    fi
-    if ss -tulnp | grep -q ':443 '; then
-        ports_in_use="${ports_in_use} 443"
-    fi
-    if ss -tulnp | grep -q ":${PANEL_PORT} "; then
-        ports_in_use="${ports_in_use} ${PANEL_PORT}"
-    fi
+    if [ "$EDIT_MODE" = "true" ]; then
+        log_success "Edit mode active (--edit): Bypassing strict port blockage check for existing installation update"
+    else
+        local ports_in_use=""
+        if ss -tulnp | grep -q ':80 '; then
+            ports_in_use="${ports_in_use} 80"
+        fi
+        if ss -tulnp | grep -q ':443 '; then
+            ports_in_use="${ports_in_use} 443"
+        fi
+        if ss -tulnp | grep -q ":${PANEL_PORT} "; then
+            ports_in_use="${ports_in_use} ${PANEL_PORT}"
+        fi
 
-    if [ -n "$ports_in_use" ]; then
-        log_error "The following ports are already in use:${ports_in_use}"
-        log_error "Please stop the services using these ports and try again."
-        exit 1
-    fi
+        if [ -n "$ports_in_use" ]; then
+            log_error "The following ports are already in use:${ports_in_use}"
+            log_error "Please stop the services using these ports or run with --edit (or -e) to update an existing installation."
+            exit 1
+        fi
 
-    log_success "Required ports (80, 443, ${PANEL_PORT}) are available"
+        log_success "Required ports (80, 443, ${PANEL_PORT}) are available"
+    fi
 }
 
 # ==========================================================================
@@ -489,34 +514,29 @@ setup_directories_and_secrets() {
     log_success "Directory structure created at ${DATA_DIR}"
 
     # --- Initialize Docker Swarm ---
-    docker swarm leave --force 2>/dev/null || true
-
     local advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
-
-    # Fallback to public IP if no private IP found
     if [ -z "$advertise_addr" ]; then
         advertise_addr=$(get_public_ip)
     fi
 
-    if [ -z "$advertise_addr" ]; then
-        log_error "Cannot detect server IP. Set ADVERTISE_ADDR manually."
-        exit 1
+    if docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null | grep -q "active"; then
+        log_success "Docker Swarm is already active"
+    else
+        if [ -z "$advertise_addr" ]; then
+            log_error "Cannot detect server IP. Set ADVERTISE_ADDR manually."
+            exit 1
+        fi
+        docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1
+        log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
     fi
-
-    docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1
-
-    if [ $? -ne 0 ]; then
-        log_error "Failed to initialize Docker Swarm"
-        exit 1
-    fi
-
-    log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
 
     # --- Create Overlay Network ---
-    docker network rm -f "$CONTROL_NETWORK" 2>/dev/null || true
-    docker network create --driver overlay --attachable "$CONTROL_NETWORK" > /dev/null 2>&1
-
-    log_success "Overlay network created: ${CONTROL_NETWORK}"
+    if ! docker network ls --format '{{.Name}}' 2>/dev/null | grep -q "^${CONTROL_NETWORK}$"; then
+        docker network create --driver overlay --attachable "$CONTROL_NETWORK" > /dev/null 2>&1
+        log_success "Overlay network created: ${CONTROL_NETWORK}"
+    else
+        log_success "Overlay network already exists: ${CONTROL_NETWORK}"
+    fi
 
     # --- Generate & Store Secrets via Docker Secrets ---
     local db_password="${DB_PASSWORD:-$(generate_random_password)}"
@@ -529,24 +549,15 @@ setup_directories_and_secrets() {
     echo "$app_key" | docker secret create dyzulk_app_key - > /dev/null 2>&1 || true
     echo "$app_id" | docker secret create dyzulk_app_id - > /dev/null 2>&1 || true
 
-    log_success "Docker Secrets created (db_password, app_key, app_id)"
+    log_success "Docker Secrets verified/created (db_password, app_key, app_id)"
 
-    # Detect server IP
     local public_ip
     local private_ip
     public_ip=$(get_public_ip)
     private_ip=$(get_private_ip)
 
     local panel_url
-    if [ -n "$PANEL_DOMAIN" ]; then
-        panel_url="https://${PANEL_DOMAIN}"
-    elif [ -n "$public_ip" ]; then
-        panel_url="http://${public_ip}:${PANEL_PORT}"
-    elif [ -n "$private_ip" ]; then
-        panel_url="http://${private_ip}:${PANEL_PORT}"
-    else
-        panel_url="http://localhost:${PANEL_PORT}"
-    fi
+    panel_url=$(get_panel_url)
 
     # Write .env reference file (non-sensitive values only)
     if [ -f "$ENV_FILE" ]; then
@@ -554,6 +565,7 @@ setup_directories_and_secrets() {
         log "Backed up existing .env file"
     fi
 
+    local target_app_domain="${PANEL_DOMAIN:-localhost}"
     cat > "$ENV_FILE" <<EOF
 # ===========================================
 # dyzulk-cloud Control Plane Configuration
@@ -565,6 +577,10 @@ setup_directories_and_secrets() {
 APP_NAME="dyzulk-cloud"
 APP_ENV=production
 APP_URL=${panel_url}
+APP_DOMAIN=${target_app_domain}
+API_DOMAIN=api.${target_app_domain}
+OFFICE_DOMAIN=office.${target_app_domain}
+SESSION_DOMAIN=.${target_app_domain}
 
 # Database (Control Plane only)
 DB_CONNECTION=pgsql
@@ -601,6 +617,9 @@ EOF
 
 deploy_stack() {
     log_step "Step 8/9: Deploying Control Plane Stack (Swarm Services)"
+
+    local panel_url
+    panel_url=$(get_panel_url)
 
     # --- PostgreSQL Service (Control Plane only, no port exposure) ---
     if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-postgres$"; then
@@ -648,8 +667,22 @@ deploy_stack() {
     log_success "PostgreSQL is ready (took ${pg_wait}s)"
 
     # --- Control Panel Service (Laravel) ---
+    local target_app_domain="${PANEL_DOMAIN:-localhost}"
     if docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-panel$"; then
-        log "Panel service already exists, skipping"
+        if [ "$EDIT_MODE" = "true" ]; then
+            log "Updating Control Panel service (--edit mode active)..."
+            docker service update \
+                --env-add APP_DOMAIN="${target_app_domain}" \
+                --env-add API_DOMAIN="api.${target_app_domain}" \
+                --env-add OFFICE_DOMAIN="office.${target_app_domain}" \
+                --env-add SESSION_DOMAIN=".${target_app_domain}" \
+                --env-add APP_URL="${panel_url}" \
+                --force \
+                dyzulk-cloud-control-panel > /dev/null 2>&1
+            log_success "Control panel service updated successfully (--edit mode)"
+        else
+            log "Panel service already exists, skipping (pass --edit or -e to update)"
+        fi
     else
         log "Deploying Control Panel service (${PANEL_IMAGE})..."
         docker service create \
@@ -672,6 +705,11 @@ deploy_stack() {
             -e DB_USERNAME=panel_admin \
             -e DB_PASSWORD_FILE=/run/secrets/db_password \
             -e APP_KEY_FILE=/run/secrets/app_key \
+            -e APP_DOMAIN="${target_app_domain}" \
+            -e API_DOMAIN="api.${target_app_domain}" \
+            -e OFFICE_DOMAIN="office.${target_app_domain}" \
+            -e SESSION_DOMAIN=".${target_app_domain}" \
+            -e APP_URL="${panel_url}" \
             "${PANEL_IMAGE}" > /dev/null 2>&1
 
         log_success "Control panel service created (image: ${PANEL_IMAGE})"
@@ -681,7 +719,13 @@ deploy_stack() {
     # Traefik runs as a regular container (not a Swarm service)
     # because it needs direct host port binding for 80/443
     if docker ps -a --format '{{.Names}}' | grep -q "^dyzulk-cloud-control-ingress$"; then
-        log "Proxy container already exists, skipping"
+        if [ "$EDIT_MODE" = "true" ]; then
+            log "Restarting Traefik Reverse Proxy (--edit mode active)..."
+            docker restart dyzulk-cloud-control-ingress > /dev/null 2>&1 || true
+            log_success "Traefik Reverse Proxy restarted (--edit mode)"
+        else
+            log "Proxy container already exists, skipping (pass --edit or -e to update)"
+        fi
     else
         log "Deploying Traefik Reverse Proxy (image: traefik:${TRAEFIK_VERSION})..."
         docker run -d \
