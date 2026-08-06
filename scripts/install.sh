@@ -731,6 +731,9 @@ health_check_and_finish() {
             local final_replicas
             final_replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
             log_error "${svc} (swarm service): ${final_replicas:-0/1}"
+            log_warn "Error details for ${svc}:"
+            docker service ps "$svc" --no-trunc 2>/dev/null | head -n 5 || true
+            docker service logs --tail 10 "$svc" 2>/dev/null || true
             all_healthy=false
         fi
     done
