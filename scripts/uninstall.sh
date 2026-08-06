@@ -6,10 +6,23 @@
 ## ==========================================================================
 ##
 ## Usage:
+##   # Standard uninstallation (prompt for confirmations)
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash
+##
+##   # Force uninstallation (bypass confirmation prompts)
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash -s -- --force
+##
+##   # Verbose uninstallation (show detailed progress logs)
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash -s -- --verbose
+##
+##   # Combined uninstallation (force + verbose)
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/uninstall.sh | sudo bash -s -- --force --verbose
+##
+##   # Local file uninstallation
 ##   sudo bash uninstall.sh
 ##   sudo bash uninstall.sh --force
+##   sudo bash uninstall.sh --verbose
+##   sudo bash uninstall.sh --force --verbose
 ##
 
 set -e

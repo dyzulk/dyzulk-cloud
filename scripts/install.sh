@@ -6,7 +6,22 @@
 ## ==========================================================================
 ##
 ## Usage:
+##   # Standard installation
 ##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash
+##
+##   # Verbose installation (show detailed progress logs)
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo bash -s -- --verbose
+##
+##   # Installation with custom environment variables
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash
+##
+##   # Combined options (custom variables + verbose mode)
+##   curl -sSL https://raw.githubusercontent.com/dyzulk/dyzulk-cloud/main/scripts/install.sh | sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash -s -- --verbose
+##
+##   # Local file installation
+##   sudo bash install.sh
+##   sudo bash install.sh --verbose
+##   sudo PANEL_PORT=8080 PANEL_DOMAIN=my-panel.com bash install.sh --verbose
 ##
 ## Environment variables:
 ##   PANEL_DOMAIN        - Domain for the control panel (default: auto-detect IP)
