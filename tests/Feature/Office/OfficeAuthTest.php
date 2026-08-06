@@ -4,6 +4,8 @@ use App\Models\Employee;
 use App\Models\User;
 
 test('office login screen can be rendered', function () {
+    Employee::factory()->create();
+
     $response = $this->get(route('office.login'));
 
     $response->assertStatus(200);
