@@ -30,7 +30,7 @@ return new class extends Migration
             $table->datetime('expired_notification_sent_at')->nullable();
             $table->timestamps();
 
-            $table->index('user_id');
+            $table->index('team_id');
             $table->index('common_name');
             $table->index('valid_to');
         });
