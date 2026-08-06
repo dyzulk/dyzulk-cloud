@@ -7,17 +7,17 @@ http:
       entryPoints:
         - web
         - app
-      rule: 'Host(`localhost:8000`) || PathPrefix(`/`)'
+      rule: 'Host(`localhost`) || Host(`127.0.0.1`)'
       service: dyzulk-cloud-control-plane-service
     dyzulk-cloud-office:
       entryPoints:
         - office
-      rule: 'Host(`localhost:8001`) || PathPrefix(`/`)'
+      rule: 'Host(`localhost`) || Host(`127.0.0.1`)'
       service: dyzulk-cloud-control-plane-service
     dyzulk-cloud-api:
       entryPoints:
         - api
-      rule: 'Host(`localhost:8002`) || PathPrefix(`/`)'
+      rule: 'Host(`localhost`) || Host(`127.0.0.1`)'
       service: dyzulk-cloud-control-plane-service
   services:
     dyzulk-cloud-control-plane-service:
