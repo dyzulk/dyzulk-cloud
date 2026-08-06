@@ -868,6 +868,120 @@ health_check_and_finish() {
 }
 
 # ==========================================================================
+# Fast Execution Tracks (Standalone Update & Edit)
+# ==========================================================================
+
+fast_update_panel_image() {
+    log_step "Fast Track: Updating Control Panel Image"
+
+    if [ "$(id -u)" != "0" ]; then
+        log_error "This script must be run as root (use sudo)"
+        exit 1
+    fi
+
+    if ! docker info >/dev/null 2>&1; then
+        log_error "Docker service is not running or not installed. Run full installation first."
+        exit 1
+    fi
+
+    if ! docker service ls --format '{{.Name}}' | grep -q "^dyzulk-cloud-control-panel$"; then
+        log_error "Control panel service 'dyzulk-cloud-control-panel' not found. Run full installation first."
+        exit 1
+    fi
+
+    log "Pulling latest Control Panel image (${PANEL_IMAGE})..."
+    docker pull "${PANEL_IMAGE}" > "$REDIRECT" 2>&1 || true
+
+    log "Updating Docker Swarm service 'dyzulk-cloud-control-panel'..."
+    docker service update \
+        --image "${PANEL_IMAGE}" \
+        --force \
+        dyzulk-cloud-control-panel > /dev/null 2>&1
+
+    log "Pruning old unused Docker images..."
+    docker image prune -f > /dev/null 2>&1 || true
+
+    echo ""
+    echo "============================================================"
+    printf "${GREEN}  Control Panel Image Updated Successfully!${NC}\n"
+    echo "============================================================"
+    echo "  Image: ${PANEL_IMAGE}"
+    echo "  Status: Swarm service updated and running"
+    echo ""
+}
+
+fast_edit_config() {
+    log_step "Fast Track: Re-configuring Environment & Domains"
+
+    if [ "$(id -u)" != "0" ]; then
+        log_error "This script must be run as root (use sudo)"
+        exit 1
+    fi
+
+    local target_app_domain="${PANEL_DOMAIN:-localhost}"
+    local panel_url
+    panel_url=$(get_panel_url)
+
+    if [ -f "$ENV_FILE" ]; then
+        cp "$ENV_FILE" "${ENV_FILE}.backup-${DATE}"
+        log "Backed up existing .env file to ${ENV_FILE}.backup-${DATE}"
+    fi
+
+    cat > "$ENV_FILE" <<EOF
+# ===========================================
+# dyzulk-cloud Control Plane Configuration
+# Updated: ${DATE}
+# ===========================================
+APP_NAME="dyzulk-cloud"
+APP_ENV=production
+APP_URL=${panel_url}
+APP_DOMAIN=${target_app_domain}
+API_DOMAIN=api.${target_app_domain}
+OFFICE_DOMAIN=office.${target_app_domain}
+SESSION_DOMAIN=.${target_app_domain}
+
+DB_CONNECTION=pgsql
+DB_HOST=dyzulk-cloud-control-postgres
+DB_PORT=5432
+DB_DATABASE=control_panel
+DB_USERNAME=panel_admin
+
+DOCKER_POOL_BASE=${DOCKER_POOL_BASE}
+DOCKER_POOL_SIZE=${DOCKER_POOL_SIZE}
+PANEL_PORT=${PANEL_PORT}
+EOF
+    chmod 600 "$ENV_FILE"
+    log_success "Environment file updated at ${ENV_FILE}"
+
+    if docker service ls --format '{{.Name}}' 2>/dev/null | grep -q "^dyzulk-cloud-control-panel$"; then
+        log "Updating Swarm service environment variables..."
+        docker service update \
+            --env-add APP_DOMAIN="${target_app_domain}" \
+            --env-add API_DOMAIN="api.${target_app_domain}" \
+            --env-add OFFICE_DOMAIN="office.${target_app_domain}" \
+            --env-add SESSION_DOMAIN=".${target_app_domain}" \
+            --env-add APP_URL="${panel_url}" \
+            --force \
+            dyzulk-cloud-control-panel > /dev/null 2>&1
+        log_success "Control panel service environment updated"
+    fi
+
+    if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^dyzulk-cloud-control-ingress$"; then
+        log "Restarting Traefik Reverse Proxy..."
+        docker restart dyzulk-cloud-control-ingress > /dev/null 2>&1 || true
+        log_success "Traefik Reverse Proxy restarted"
+    fi
+
+    echo ""
+    echo "============================================================"
+    printf "${GREEN}  Configuration Updated Successfully!${NC}\n"
+    echo "============================================================"
+    echo "  Panel Domain: ${target_app_domain}"
+    echo "  Panel URL:    ${panel_url}"
+    echo ""
+}
+
+# ==========================================================================
 # Main Execution
 # ==========================================================================
 
@@ -884,6 +998,16 @@ main() {
 
     # Tee all output to installation log
     exec > >(tee -a "$INSTALLATION_LOG") 2>&1
+
+    if [ "$UPDATE_MODE" = "true" ]; then
+        fast_update_panel_image
+        exit 0
+    fi
+
+    if [ "$EDIT_MODE" = "true" ]; then
+        fast_edit_config
+        exit 0
+    fi
 
     preflight_checks          # Step 0: Root, OS, ports
     check_disk_space          # Step 1: Disk space warning
