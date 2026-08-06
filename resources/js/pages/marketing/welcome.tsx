@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Heart, Sparkles, HelpCircle } from 'lucide-react';
+import { ArrowRight, Heart, Sparkles, HelpCircle, Menu, X, Server, Cpu, BookOpen } from 'lucide-react';
 import * as React from 'react';
+import { useState } from 'react';
 import ApplicationLogo from '@/components/application-logo';
 import { MegaMenu } from '@/components/mega-menu';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
@@ -22,6 +23,7 @@ import { dashboard, login, register } from '@/routes';
 export default function Welcome() {
     const { auth, currentTeam } = usePage().props;
     const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <>
@@ -32,18 +34,21 @@ export default function Welcome() {
                 {/* Header / Navbar */}
                 <header className="sticky top-0 z-50 bg-secondary-background border-b-4 border-border px-6 py-4">
                     <div className="max-w-6xl mx-auto flex items-center justify-between">
-                        <div className="flex items-center gap-8">
-                            <Link href="/" className="flex items-center gap-2 hover:translate-x-1 transition-transform">
-                                <ApplicationLogo className="h-6 w-auto text-[#1b1b18] dark:text-[#EDEDEC]" />
+                        <div className="flex items-center gap-6 md:gap-8">
+                            <Link href="/" className="flex items-center gap-2.5 hover:-translate-y-0.5 transition-transform">
+                                <ApplicationLogo className="h-7 w-auto text-[#1b1b18] dark:text-[#EDEDEC]" />
+                                <span className="hidden sm:inline-block bg-main text-main-foreground font-heading font-bold text-xs px-2 py-0.5 border-2 border-border rounded-base shadow-shadow">
+                                    v1.0
+                                </span>
                             </Link>
                             <div className="hidden md:block">
                                 <MegaMenu />
                             </div>
                         </div>
 
-                        <nav className="flex items-center gap-4">
+                        <nav className="flex items-center gap-3">
                             {auth.user ? (
-                                <Button asChild variant="default" size="sm">
+                                <Button asChild variant="default" size="sm" className="shadow-shadow font-heading font-bold">
                                     <Link href={dashboardUrl}>
                                         Dashboard
                                         <ArrowRight className="h-4 w-4" />
@@ -51,25 +56,59 @@ export default function Welcome() {
                                 </Button>
                             ) : (
                                 <>
-                                    <Button asChild variant="ghost" size="sm">
+                                    <Button asChild variant="neutral" size="sm" className="hidden sm:inline-flex shadow-shadow font-heading font-bold">
                                         <Link href={login()}>
                                             Log in
                                         </Link>
                                     </Button>
-                                    <Button asChild variant="default" size="sm">
+                                    <Button asChild variant="default" size="sm" className="shadow-shadow font-heading font-bold">
                                         <Link href={register()}>
                                             Register
                                         </Link>
                                     </Button>
                                 </>
                             )}
+
+                            {/* Mobile Menu Toggle Button */}
+                            <Button 
+                                variant="neutral" 
+                                size="sm"
+                                className="md:hidden p-2 shadow-shadow border-2 border-border"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                aria-label="Toggle Menu"
+                            >
+                                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                            </Button>
                         </nav>
                     </div>
+
+                    {/* Mobile Navigation Drawer */}
+                    {mobileMenuOpen && (
+                        <div className="md:hidden mt-4 pt-4 border-t-2 border-border space-y-3 bg-background p-4 rounded-base border-2 border-border shadow-shadow">
+                            <div className="font-heading font-bold text-sm text-foreground mb-2">Navigation</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm font-base">
+                                <a href="#products" className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
+                                    <Server className="h-4 w-4 text-main" /> Products
+                                </a>
+                                <a href="#solutions" className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
+                                    <Cpu className="h-4 w-4 text-main" /> Solutions
+                                </a>
+                                <a href="https://laravel.com/docs" target="_blank" rel="noreferrer" className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
+                                    <BookOpen className="h-4 w-4 text-main" /> Docs
+                                </a>
+                                {!auth.user && (
+                                    <Link href={login()} className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
+                                        Log in
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </header>
 
                 {/* SECTION 1: HERO SECTION */}
                 <section className="relative px-6 py-20 md:py-32 overflow-hidden border-b-4 border-border">
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] text-foreground/20 bg-[size:20px_20px] pointer-events-none" />
                     
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 relative z-10">
                         <div className="flex-1 text-center md:text-left space-y-6">
