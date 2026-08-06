@@ -61,11 +61,13 @@ PANEL_IMAGE="${PANEL_IMAGE:-ghcr.io/dyzulk/dyzulk-cloud:latest}"
 
 # ==========================================================================
 # Verbose Mode Configuration
+# NOTE: Do NOT use -v shortcut. It conflicts with bash's built-in -v flag
+#       which prints raw script lines to terminal.
 # ==========================================================================
 VERBOSE="${VERBOSE:-false}"
 for arg in "$@"; do
     case $arg in
-        --verbose|-v)
+        --verbose)
             VERBOSE=true
             ;;
     esac

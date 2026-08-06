@@ -63,7 +63,7 @@ for arg in "$@"; do
         --force|--yes|-y)
             FORCE=true
             ;;
-        --verbose|-v)
+        --verbose)
             VERBOSE=true
             ;;
     esac
