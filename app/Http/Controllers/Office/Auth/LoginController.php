@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Office\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Office\Auth\LoginRequest;
+use App\Models\Employee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,8 +16,12 @@ class LoginController extends Controller
     /**
      * Display the office login view.
      */
-    public function create(): Response
+    public function create(): Response|RedirectResponse
     {
+        if (Employee::count() === 0) {
+            return redirect()->route('office.onboarding');
+        }
+
         return Inertia::render('office/auth/login');
     }
 

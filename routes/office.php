@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Office\Auth\LoginController;
+use App\Http\Controllers\Office\Auth\OnboardingController;
 use App\Http\Controllers\Office\DashboardController;
 use App\Http\Controllers\Office\SslCaController;
 use App\Http\Middleware\EnsureOfficeAccess;
@@ -17,8 +18,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Office Auth (guests only)
+// Office Auth & Initial Onboarding (guests only)
 Route::middleware('guest:office')->group(function () {
+    Route::get('onboarding', [OnboardingController::class, 'create'])->name('office.onboarding');
+    Route::post('onboarding', [OnboardingController::class, 'store'])->name('office.onboarding.store');
     Route::get('login', [LoginController::class, 'create'])->name('office.login');
     Route::post('login', [LoginController::class, 'store']);
 });
