@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            $port = (int) (request()->getPort() ?: request()->server('SERVER_PORT', 8000));
+            $port = (int) (($_SERVER['SERVER_PORT'] ?? null) ?: (request()->server('SERVER_PORT') ?: (request()->getPort() ?: 8000)));
 
             // Port 8002 -> REST API at root
             if ($port === 8002) {
@@ -43,9 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($port === 8001) {
                 Route::middleware('office')
                     ->group(base_path('routes/office.php'));
-            } else {
+            } elseif (app()->runningInConsole()) {
                 Route::middleware('office')
-                    ->prefix('office')
+                    ->domain('office.localhost')
                     ->group(base_path('routes/office.php'));
             }
         },
@@ -54,9 +54,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->redirectGuestsTo(function (Request $request) {
-            $port = (int) ($request->getPort() ?: $request->server('SERVER_PORT', 8000));
+            $port = (int) (($_SERVER['SERVER_PORT'] ?? null) ?: ($request->server('SERVER_PORT') ?: ($request->getPort() ?: 8000)));
 
-            if ($request->is('office*') || $port === 8001) {
+            if ($port === 8001 || str_contains($request->getHost(), 'office.')) {
                 return route('office.login');
             }
 

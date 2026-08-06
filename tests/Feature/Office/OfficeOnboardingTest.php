@@ -1,5 +1,7 @@
 <?php
 
+$_SERVER['SERVER_PORT'] = 8001;
+
 use App\Enums\OfficeDepartment;
 use App\Enums\OfficeRole;
 use App\Models\Employee;

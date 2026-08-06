@@ -1,5 +1,7 @@
 <?php
 
+$_SERVER['SERVER_PORT'] = 8001;
+
 use App\Models\Employee;
 use App\Models\SiteSetting;
 
