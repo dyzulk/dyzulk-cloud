@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\SiteSetting;
-use App\Services\TraefikConfigService;
+use App\Services\Traefik\TraefikConfigService;
 use Illuminate\Database\Seeder;
 
 class SiteSettingSeeder extends Seeder

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Traefik;
 
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\File;

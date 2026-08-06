@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Office;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
-use App\Services\TraefikConfigService;
+use App\Services\Traefik\TraefikConfigService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
