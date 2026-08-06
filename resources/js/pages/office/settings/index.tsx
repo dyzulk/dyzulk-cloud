@@ -41,6 +41,9 @@ interface SettingsProps {
             wildcard_domain: string;
         };
         network: {
+            app_domain: string;
+            office_domain: string;
+            api_domain: string;
             control_network: string;
             traefik_version: string;
             docker_pool_base: string;
@@ -313,6 +316,50 @@ export default function OfficeSettingsIndex({ settings }: SettingsProps) {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
+                                    <div className="rounded-base border p-4 bg-muted/30 space-y-4">
+                                        <h4 className="font-semibold text-sm flex items-center gap-2">
+                                            <Globe className="h-4 w-4 text-primary" />
+                                            External Domain Mapping per Service Port
+                                        </h4>
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="app_domain">App Domain (Port 8000)</Label>
+                                                <Input
+                                                    id="app_domain"
+                                                    value={networkForm.data.app_domain || ''}
+                                                    onChange={(e) =>
+                                                        networkForm.setData('app_domain', e.target.value)
+                                                    }
+                                                    placeholder="cloud.example.com"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="office_domain">Office Domain (Port 8001)</Label>
+                                                <Input
+                                                    id="office_domain"
+                                                    value={networkForm.data.office_domain || ''}
+                                                    onChange={(e) =>
+                                                        networkForm.setData('office_domain', e.target.value)
+                                                    }
+                                                    placeholder="office.example.com"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="api_domain">API Domain (Port 8002)</Label>
+                                                <Input
+                                                    id="api_domain"
+                                                    value={networkForm.data.api_domain || ''}
+                                                    onChange={(e) =>
+                                                        networkForm.setData('api_domain', e.target.value)
+                                                    }
+                                                    placeholder="api.example.com"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="control_network">Control Network Name</Label>
