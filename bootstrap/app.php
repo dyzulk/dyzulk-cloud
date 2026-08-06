@@ -51,6 +51,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('office*') || str_starts_with($request->getHost(), 'office.')) {
+                return $request->is('office*') ? url('/office/login') : route('office.login');
+            }
+
+            return route('login');
+        });
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
