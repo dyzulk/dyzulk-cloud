@@ -1,4 +1,14 @@
 ################################################################################
+# Stage 0: PHP Dependencies for Wayfinder
+################################################################################
+FROM composer:latest AS composer-dev
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install --ignore-platform-reqs --no-interaction --no-scripts --prefer-dist
+
+################################################################################
 # Stage 1: Frontend Build (Node 24 + pnpm)
 ################################################################################
 FROM node:24-slim AS frontend
@@ -15,11 +25,15 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
+# Copy PHP dependencies for Wayfinder
+COPY --from=composer-dev /app/vendor ./vendor
+
 # Copy source code (required by Wayfinder to read PHP routes)
 COPY . .
 
 # Build frontend assets
 RUN pnpm run build
+
 
 ################################################################################
 # Stage 2: Production Runtime (PHP 8.5 CLI + FrankenPHP)
