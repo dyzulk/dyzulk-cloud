@@ -57,12 +57,26 @@ class ServeMultiCommand extends Command
             exit(0);
         };
 
-        pcntl_signal(SIGINT, $shutdown);
-        pcntl_signal(SIGTERM, $shutdown);
+        if (function_exists('pcntl_signal')) {
+            pcntl_signal(SIGINT, $shutdown);
+            pcntl_signal(SIGTERM, $shutdown);
 
-        while (true) {
-            pcntl_signal_dispatch();
-            usleep(500000);
+            while (true) {
+                pcntl_signal_dispatch();
+                usleep(500000);
+            }
+        } elseif (function_exists('sapi_windows_set_ctrl_handler')) {
+            sapi_windows_set_ctrl_handler($shutdown);
+
+            while (true) {
+                usleep(500000);
+            }
+        } else {
+            $this->warn('Signal handling not supported. Press Ctrl+C to stop.');
+
+            while (true) {
+                usleep(500000);
+            }
         }
     }
 }
