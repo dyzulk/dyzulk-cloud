@@ -1,0 +1,35 @@
+name: dyzulk-cloud-dev
+
+services:
+    laravel.test:
+        build:
+            context: './vendor/laravel/sail/runtimes/8.5'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP:-1000}'
+        image: 'sail-8.5/app'
+        container_name: dyzulk-cloud-dev-app
+        labels:
+            com.dyzulk.environment: 'development'
+            com.dyzulk.service: 'sail'
+            com.dyzulk.app: 'dyzulk-cloud'
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-8000}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER:-1000}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            DB_CONNECTION: 'sqlite'
+            DB_DATABASE: '/var/www/html/database/database.sqlite'
+        volumes:
+            - '.:/var/www/html'
+            - '/var/run/docker.sock:/var/run/docker.sock'
+        networks:
+            - sail-dev
+
+networks:
+    sail-dev:
+        driver: bridge
