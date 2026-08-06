@@ -19,7 +19,7 @@ class DashboardController extends Controller
     {
         $stats = [
             'total_users' => User::count(),
-            'total_teams' => Team::count(),
+            'total_teams' => Team::where('is_personal', false)->count(),
             'total_certificates' => Certificate::count(),
             'total_deployments' => Deployment::count(),
         ];

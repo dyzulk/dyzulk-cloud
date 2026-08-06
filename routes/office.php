@@ -3,6 +3,7 @@
 use App\Http\Controllers\Office\Auth\LoginController;
 use App\Http\Controllers\Office\Auth\OnboardingController;
 use App\Http\Controllers\Office\DashboardController;
+use App\Http\Controllers\Office\DockerController;
 use App\Http\Controllers\Office\SslCaController;
 use App\Http\Middleware\EnsureOfficeAccess;
 use Illuminate\Support\Facades\Route;
@@ -36,8 +37,9 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class])->group(function ()
     Route::get('/', DashboardController::class)->name('office.dashboard');
 });
 
-// Office CA Admin (Administrators only)
+// Office Administrator Routes (Administrators only)
 Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])->name('office.')->group(function () {
+    Route::get('docker', [DockerController::class, 'index'])->name('docker.index');
     Route::get('ssl/ca', [SslCaController::class, 'index'])->name('ssl.ca.index');
     Route::post('ssl/ca/setup', [SslCaController::class, 'setupCa'])->name('ssl.ca.setup');
     Route::post('ssl/ca/{certificate}/renew', [SslCaController::class, 'renew'])->name('ssl.ca.renew');

@@ -2,11 +2,13 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     BarChart3,
     Briefcase,
+    Container,
     DollarSign,
     FolderGit2,
     LayoutGrid,
     Megaphone,
 } from 'lucide-react';
+import { index as officeDockerIndex } from '@/actions/App/Http/Controllers/Office/DockerController';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
 import { OfficeNavEmployee } from '@/components/office/office-nav-employee';
@@ -35,6 +37,7 @@ export function OfficeSidebar() {
     const planningUrl = '/planning';
     const reportsUrl = '/reports';
     const caAdminUrl = getRelativeUrl(officeSslCaIndex.url());
+    const dockerUrl = getRelativeUrl(officeDockerIndex.url());
 
     const mainNavItems: NavItem[] = [
         {
@@ -82,6 +85,11 @@ export function OfficeSidebar() {
 
     if (employee.role === 'administrator') {
         departmentNavItems.push({
+            title: 'Docker',
+            href: dockerUrl,
+            icon: Container,
+        });
+        departmentNavItems.push({
             title: 'Reports',
             href: reportsUrl,
             icon: BarChart3,
@@ -92,6 +100,7 @@ export function OfficeSidebar() {
             icon: FolderGit2,
         });
     }
+
 
     return (
         <Sidebar collapsible="icon" variant="inset">
