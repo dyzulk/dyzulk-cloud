@@ -708,17 +708,29 @@ deploy_stack() {
 health_check_and_finish() {
     log_step "Step 9/9: Health Check & Verification"
 
-    sleep 5
-
-    # Check Swarm services
+    log "Waiting for Swarm services to start and reach 1/1 replicas..."
     local all_healthy=true
     for svc in dyzulk-cloud-control-postgres dyzulk-cloud-control-panel; do
-        local replicas
-        replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
-        if echo "$replicas" | grep -q "1/1"; then
+        local svc_wait=0
+        local svc_max=90
+        local is_ready=false
+        while [ $svc_wait -lt $svc_max ]; do
+            local replicas
+            replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
+            if echo "$replicas" | grep -q "1/1"; then
+                is_ready=true
+                break
+            fi
+            sleep 3
+            svc_wait=$((svc_wait + 3))
+        done
+
+        if [ "$is_ready" = true ]; then
             log_success "${svc} (swarm service): 1/1 replicas running"
         else
-            log_error "${svc} (swarm service): ${replicas}"
+            local final_replicas
+            final_replicas=$(docker service ls --filter "name=${svc}" --format '{{.Replicas}}' 2>/dev/null)
+            log_error "${svc} (swarm service): ${final_replicas:-0/1}"
             all_healthy=false
         fi
     done
