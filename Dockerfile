@@ -3,6 +3,9 @@
 ################################################################################
 FROM node:24-slim AS frontend
 
+# Install PHP CLI for Wayfinder type generation
+RUN apt-get update && apt-get install -y php-cli --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Install pnpm
@@ -12,9 +15,10 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
-# Copy source and build frontend assets
-COPY resources/ resources/
-COPY vite.config.ts tsconfig.json ./
+# Copy source code (required by Wayfinder to read PHP routes)
+COPY . .
+
+# Build frontend assets
 RUN pnpm run build
 
 ################################################################################
