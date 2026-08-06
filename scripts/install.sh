@@ -530,15 +530,25 @@ setup_directories_and_secrets() {
         advertise_addr=$(get_public_ip)
     fi
 
-    if docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null | grep -q "active"; then
-        log_success "Docker Swarm is already active"
-    else
-        if [ -z "$advertise_addr" ]; then
-            log_error "Cannot detect server IP. Set ADVERTISE_ADDR manually."
+    local swarm_state
+    swarm_state=$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
+
+    if [ "$swarm_state" != "active" ]; then
+        log "Initializing Docker Swarm..."
+        if [ -n "$advertise_addr" ]; then
+            docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1 || docker swarm init --force-new-cluster --advertise-addr "$advertise_addr" > /dev/null 2>&1 || docker swarm init > /dev/null 2>&1 || true
+        else
+            docker swarm init > /dev/null 2>&1 || docker swarm init --force-new-cluster > /dev/null 2>&1 || true
+        fi
+
+        swarm_state=$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || echo "inactive")
+        if [ "$swarm_state" != "active" ]; then
+            log_error "Failed to initialize Docker Swarm manager. Please run 'docker swarm init' manually."
             exit 1
         fi
-        docker swarm init --advertise-addr "$advertise_addr" > /dev/null 2>&1 || true
-        log_success "Docker Swarm initialized (advertise: ${advertise_addr})"
+        log_success "Docker Swarm initialized"
+    else
+        log_success "Docker Swarm is already active"
     fi
 
     # --- Create Overlay Network ---
