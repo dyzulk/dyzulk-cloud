@@ -30,11 +30,6 @@ class TraefikConfigService
             $hostRules[] = "Host(`api.{$parsedHost}`)";
         }
 
-        $publicIp = SiteSetting::get('public_ipv4');
-        if ($publicIp) {
-            $hostRules[] = "Host(`{$publicIp}`)";
-        }
-
         // Deduplicate host rules
         $hostRules = array_unique(array_values($hostRules));
         $ruleString = implode(' || ', $hostRules);
