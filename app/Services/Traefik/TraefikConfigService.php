@@ -23,8 +23,8 @@ class TraefikConfigService
         $targetServiceHost = env('TRAEFIK_TARGET_SERVICE', 'dyzulk-cloud-dev-app');
 
         $appRule = $appDomain && $appDomain !== 'localhost' ? "Host(`{$appDomain}`) || PathPrefix(`/`)" : 'PathPrefix(`/`)';
-        $officeRule = $officeDomain && $officeDomain !== 'localhost' ? "Host(`{$officeDomain}`) || EntryPoint(`office`)" : 'PathPrefix(`/`)';
-        $apiRule = $apiDomain && $apiDomain !== 'localhost' ? "Host(`{$apiDomain}`) || EntryPoint(`api`)" : 'PathPrefix(`/`)';
+        $officeRule = $officeDomain && $officeDomain !== 'localhost' ? "Host(`{$officeDomain}`) || PathPrefix(`/`)" : 'PathPrefix(`/`)';
+        $apiRule = $apiDomain && $apiDomain !== 'localhost' ? "Host(`{$apiDomain}`) || PathPrefix(`/`)" : 'PathPrefix(`/`)';
 
         $config = [
             'http' => [
