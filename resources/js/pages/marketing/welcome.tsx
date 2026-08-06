@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Heart, Sparkles, HelpCircle, Menu, X, Server, Cpu, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, Cpu, Heart, HelpCircle, Menu, Moon, Server, Sparkles, Sun, X } from 'lucide-react';
 import * as React from 'react';
 import { useState } from 'react';
 import ApplicationLogo from '@/components/application-logo';
@@ -18,12 +18,14 @@ import Star30 from '@/components/ui/stars/s30';
 import Star33 from '@/components/ui/stars/s33';
 import Star40 from '@/components/ui/stars/s40';
 import Star8 from '@/components/ui/stars/s8';
+import { useAppearance } from '@/hooks/use-appearance';
 import { dashboard, login, register } from '@/routes';
 
 export default function Welcome() {
     const { auth, currentTeam } = usePage().props;
     const dashboardUrl = currentTeam ? dashboard(currentTeam.slug) : '/';
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { resolvedAppearance, updateAppearance } = useAppearance();
 
     return (
         <>
@@ -47,6 +49,22 @@ export default function Welcome() {
                         </div>
 
                         <nav className="flex items-center gap-3">
+                            {/* Neobrutalism Theme Toggle Button */}
+                            <Button
+                                variant="neutral"
+                                size="sm"
+                                className="p-2 shadow-shadow border-2 border-border hover:-translate-y-0.5 transition-transform"
+                                onClick={() => updateAppearance(resolvedAppearance === 'dark' ? 'light' : 'dark')}
+                                aria-label="Toggle Theme"
+                                title={resolvedAppearance === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            >
+                                {resolvedAppearance === 'dark' ? (
+                                    <Sun className="h-4 w-4 text-amber-500 fill-amber-400" />
+                                ) : (
+                                    <Moon className="h-4 w-4 text-slate-800 fill-slate-800" />
+                                )}
+                            </Button>
+
                             {auth.user ? (
                                 <Button asChild variant="default" size="sm" className="shadow-shadow font-heading font-bold">
                                     <Link href={dashboardUrl}>
@@ -96,8 +114,22 @@ export default function Welcome() {
                                 <a href="https://laravel.com/docs" target="_blank" rel="noreferrer" className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
                                     <BookOpen className="h-4 w-4 text-main" /> Docs
                                 </a>
+                                <button
+                                    onClick={() => updateAppearance(resolvedAppearance === 'dark' ? 'light' : 'dark')}
+                                    className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2 text-left"
+                                >
+                                    {resolvedAppearance === 'dark' ? (
+                                        <>
+                                            <Sun className="h-4 w-4 text-amber-500 fill-amber-400" /> Light Mode
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Moon className="h-4 w-4 text-slate-800 fill-slate-800" /> Dark Mode
+                                        </>
+                                    )}
+                                </button>
                                 {!auth.user && (
-                                    <Link href={login()} className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2">
+                                    <Link href={login()} className="p-2 bg-secondary-background border-2 border-border rounded-base shadow-shadow font-bold flex items-center gap-2 col-span-2 justify-center">
                                         Log in
                                     </Link>
                                 )}
