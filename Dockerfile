@@ -84,7 +84,7 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/up || exit 1
 
-EXPOSE 8000
+EXPOSE 8000 8001 8002
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

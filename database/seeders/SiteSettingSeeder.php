@@ -23,6 +23,10 @@ class SiteSettingSeeder extends Seeder
                 'wildcard_domain' => '*.dyzulk.local',
             ],
             'network' => [
+                'app_domain' => env('APP_DOMAIN', 'localhost:8000'),
+                'office_domain' => env('OFFICE_DOMAIN', 'localhost:8001'),
+                'api_domain' => env('API_DOMAIN', 'localhost:8002'),
+                'session_domain' => env('SESSION_DOMAIN', ''),
                 'control_network' => 'dyzulk-cloud-control-network',
                 'traefik_version' => 'v3.0',
                 'docker_pool_base' => '10.0.0.0/8',

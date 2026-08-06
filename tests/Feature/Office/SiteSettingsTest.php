@@ -57,6 +57,10 @@ test('administrator can update network settings', function () {
 
     $response = $this->actingAs($employee, 'office')
         ->put(route('office.settings.update', 'network'), [
+            'app_domain' => 'localhost:8000',
+            'office_domain' => 'localhost:8001',
+            'api_domain' => 'localhost:8002',
+            'session_domain' => '.dyzulk.com',
             'control_network' => 'dyzulk-cloud-control-network',
             'traefik_version' => 'v3.1',
             'docker_pool_base' => '10.0.0.0/8',
@@ -68,4 +72,5 @@ test('administrator can update network settings', function () {
 
     $response->assertRedirect();
     expect(SiteSetting::get('traefik_version'))->toBe('v3.1');
+    expect(SiteSetting::get('session_domain'))->toBe('.dyzulk.com');
 });

@@ -48,32 +48,37 @@ class AppServiceProvider extends ServiceProvider
     {
         try {
             if (Schema::hasTable('site_settings')) {
-                $instanceUrl = SiteSetting::get('instance_url');
-                if ($instanceUrl) {
-                    $host = parse_url($instanceUrl, PHP_URL_HOST);
-                    if ($host && $host !== 'localhost' && $host !== '127.0.0.1') {
-                        $stateful = config('sanctum.stateful', []);
-                        if (is_string($stateful)) {
-                            $stateful = explode(',', $stateful);
-                        }
+                $appDomain = SiteSetting::get('app_domain') ?: config('app.domain');
+                $officeDomain = SiteSetting::get('office_domain') ?: config('app.office.domain');
+                $apiDomain = SiteSetting::get('api_domain') ?: config('app.api.domain');
+                $sessionDomainSetting = SiteSetting::get('session_domain');
 
-                        $stateful = array_unique(array_filter(array_merge($stateful, [
-                            $host,
-                            'office.'.$host,
-                            'api.'.$host,
-                            'office.localhost',
-                            'localhost',
-                        ])));
+                $sessionDomain = ($sessionDomainSetting !== null && $sessionDomainSetting !== '')
+                    ? $sessionDomainSetting
+                    : config('session.domain');
 
-                        config([
-                            'app.domain' => $host,
-                            'app.office.domain' => 'office.'.$host,
-                            'app.api.domain' => 'api.'.$host,
-                            'session.domain' => '.'.$host,
-                            'sanctum.stateful' => $stateful,
-                        ]);
-                    }
+                $stateful = config('sanctum.stateful', []);
+                if (is_string($stateful)) {
+                    $stateful = explode(',', $stateful);
                 }
+
+                $stateful = array_unique(array_filter(array_merge($stateful, [
+                    $appDomain,
+                    $officeDomain,
+                    $apiDomain,
+                    'localhost:8000',
+                    'localhost:8001',
+                    'localhost:8002',
+                    'localhost',
+                ])));
+
+                config([
+                    'app.domain' => $appDomain,
+                    'app.office.domain' => $officeDomain,
+                    'app.api.domain' => $apiDomain,
+                    'session.domain' => $sessionDomain ?: null,
+                    'sanctum.stateful' => $stateful,
+                ]);
             }
         } catch (\Throwable $e) {
             // Catch early DB bootstrapping exceptions

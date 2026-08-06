@@ -7,3 +7,15 @@
 	encode zstd gzip
 	php_server
 }
+
+:8001 {
+	root * public
+	encode zstd gzip
+	php_server
+}
+
+:8002 {
+	root * public
+	encode zstd gzip
+	php_server
+}

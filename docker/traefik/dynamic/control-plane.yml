@@ -3,11 +3,25 @@
 
 http:
   routers:
-    dyzulk-cloud-control-plane:
+    dyzulk-cloud-app:
       entryPoints:
         - web
-      rule: 'Host(`localhost`) || Host(`127.0.0.1`) || Host(`office.localhost`) || Host(`api.localhost`)'
+        - app
+      rule: 'PathPrefix(`/`)'
       service: dyzulk-cloud-control-plane-service
+
+    dyzulk-cloud-office:
+      entryPoints:
+        - office
+      rule: 'PathPrefix(`/`)'
+      service: dyzulk-cloud-control-plane-service
+
+    dyzulk-cloud-api:
+      entryPoints:
+        - api
+      rule: 'PathPrefix(`/`)'
+      service: dyzulk-cloud-control-plane-service
+
   services:
     dyzulk-cloud-control-plane-service:
       loadBalancer:

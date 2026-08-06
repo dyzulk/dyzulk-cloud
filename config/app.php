@@ -52,29 +52,18 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'http://localhost:8000'),
 
     'domain' => env('APP_DOMAIN', 'localhost'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Subdomain Configuration
-    |--------------------------------------------------------------------------
-    |
-    | All subdomains derive from APP_DOMAIN. In production, set APP_DOMAIN
-    | to your root domain (e.g. "example.com") and everything cascades:
-    | api.example.com, office.example.com, .example.com session cookie.
-    |
-    */
-
     'api' => [
-        'domain' => env('API_DOMAIN', 'api.'.env('APP_DOMAIN', 'localhost')),
-        'url' => env('API_URL', 'http://api.'.env('APP_DOMAIN', 'localhost')),
+        'domain' => env('API_DOMAIN', 'api.localhost'),
+        'url' => env('API_URL', 'http://localhost:8002'),
     ],
 
     'office' => [
-        'domain' => env('OFFICE_DOMAIN', 'office.'.env('APP_DOMAIN', 'localhost')),
-        'url' => env('OFFICE_URL', 'http://office.'.env('APP_DOMAIN', 'localhost')),
+        'domain' => env('OFFICE_DOMAIN', 'office.localhost'),
+        'url' => env('OFFICE_URL', 'http://localhost:8001'),
     ],
 
     /*

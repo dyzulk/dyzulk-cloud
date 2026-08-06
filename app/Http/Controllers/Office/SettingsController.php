@@ -59,6 +59,10 @@ class SettingsController extends Controller
                 'wildcard_domain' => ['nullable', 'string', 'max:255'],
             ]),
             'network' => $request->validate([
+                'app_domain' => ['nullable', 'string', 'max:255'],
+                'office_domain' => ['nullable', 'string', 'max:255'],
+                'api_domain' => ['nullable', 'string', 'max:255'],
+                'session_domain' => ['nullable', 'string', 'max:255'],
                 'control_network' => ['required', 'string', 'max:255'],
                 'traefik_version' => ['required', 'string', 'max:50'],
                 'docker_pool_base' => ['required', 'string', 'max:50'],

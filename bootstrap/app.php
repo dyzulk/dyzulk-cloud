@@ -27,33 +27,37 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            $apiDomain = config('app.api.domain');
-            $officeDomain = config('app.office.domain');
+            $port = (int) (request()->getPort() ?: request()->server('SERVER_PORT', 8000));
 
-            // Global/Unversioned API routes
-            Route::middleware('api')
-                ->domain($apiDomain)
-                ->group(base_path('routes/api.php'));
+            // Port 8002 -> REST API
+            if ($port === 8002) {
+                Route::middleware('api')
+                    ->group(base_path('routes/api.php'));
+            } else {
+                Route::middleware('api')
+                    ->prefix('api')
+                    ->group(base_path('routes/api.php'));
+            }
 
-            // Office dashboard routes
-            Route::middleware('office')->group(function () use ($officeDomain) {
-                Route::domain($officeDomain)->group(base_path('routes/office.php'));
-                if ($officeDomain !== 'office.localhost') {
-                    Route::domain('office.localhost')->group(base_path('routes/office.php'));
-                }
-                Route::domain('office.{domain}')->group(base_path('routes/office.php'));
-
-                // Direct IP / Path Fallback
-                Route::prefix('office')->group(base_path('routes/office.php'));
-            });
+            // Port 8001 -> Office Dashboard
+            if ($port === 8001) {
+                Route::middleware('office')
+                    ->group(base_path('routes/office.php'));
+            } else {
+                Route::middleware('office')
+                    ->prefix('office')
+                    ->group(base_path('routes/office.php'));
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
         $middleware->redirectGuestsTo(function (Request $request) {
-            if ($request->is('office*') || str_starts_with($request->getHost(), 'office.')) {
-                return $request->is('office*') ? url('/office/login') : route('office.login');
+            $port = (int) ($request->getPort() ?: $request->server('SERVER_PORT', 8000));
+
+            if ($request->is('office*') || $port === 8001) {
+                return route('office.login');
             }
 
             return route('login');
@@ -88,11 +92,12 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->getHost() === config('app.api.domain'),
+            fn (Request $request) => $request->is('api*') || (int) ($request->getPort() ?: $request->server('SERVER_PORT', 8000)) === 8002,
         );
 
         $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->expectsJson() || $request->getHost() === config('app.api.domain')) {
+            $isApi = $request->expectsJson() || $request->is('api*') || (int) ($request->getPort() ?: $request->server('SERVER_PORT', 8000)) === 8002;
+            if ($isApi) {
                 return app(ApiExceptionHandler::class)->handle($e, $request);
             }
         });
