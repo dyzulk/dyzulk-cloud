@@ -1,38 +1,32 @@
 ################################################################################
-# Stage 0: PHP Dependencies for Wayfinder
+# Stage 1: Frontend Build (FrankenPHP PHP 8.5 + Node 24)
 ################################################################################
-FROM composer:latest AS composer-dev
+FROM dunglas/frankenphp:php8.5-alpine AS frontend
+
+# Copy Node.js from official Node alpine image
+COPY --from=node:24-alpine /usr/local /usr/local
+# Copy Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy PHP dependencies configuration and install (needed by Wayfinder)
 COPY composer.json composer.lock ./
 RUN composer install --ignore-platform-reqs --no-interaction --no-scripts --prefer-dist
-
-################################################################################
-# Stage 1: Frontend Build (Node 24 + pnpm)
-################################################################################
-FROM node:24-slim AS frontend
-
-# Install PHP CLI for Wayfinder type generation
-RUN apt-get update && apt-get install -y php-cli --no-install-recommends && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install frontend dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
-
-# Copy PHP dependencies for Wayfinder
-COPY --from=composer-dev /app/vendor ./vendor
 
 # Copy source code (required by Wayfinder to read PHP routes)
 COPY . .
 
 # Build frontend assets
 RUN pnpm run build
+
 
 
 ################################################################################
