@@ -7,6 +7,7 @@ import {
     FolderGit2,
     LayoutGrid,
     Megaphone,
+    Settings,
 } from 'lucide-react';
 import { index as officeDockerIndex } from '@/actions/App/Http/Controllers/Office/DockerController';
 import AppLogoIcon from '@/components/app-logo-icon';
@@ -38,6 +39,7 @@ export function OfficeSidebar() {
     const reportsUrl = '/reports';
     const caAdminUrl = getRelativeUrl(officeSslCaIndex.url());
     const dockerUrl = getRelativeUrl(officeDockerIndex.url());
+    const settingsUrl = '/settings';
 
     const mainNavItems: NavItem[] = [
         {
@@ -98,6 +100,11 @@ export function OfficeSidebar() {
             title: 'CA Admin',
             href: caAdminUrl,
             icon: FolderGit2,
+        });
+        departmentNavItems.push({
+            title: 'Site Settings',
+            href: settingsUrl,
+            icon: Settings,
         });
     }
 

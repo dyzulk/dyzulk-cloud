@@ -4,6 +4,7 @@ use App\Http\Controllers\Office\Auth\LoginController;
 use App\Http\Controllers\Office\Auth\OnboardingController;
 use App\Http\Controllers\Office\DashboardController;
 use App\Http\Controllers\Office\DockerController;
+use App\Http\Controllers\Office\SettingsController;
 use App\Http\Controllers\Office\SslCaController;
 use App\Http\Middleware\EnsureOfficeAccess;
 use Illuminate\Support\Facades\Route;
@@ -44,4 +45,8 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])-
     Route::post('ssl/ca/setup', [SslCaController::class, 'setupCa'])->name('ssl.ca.setup');
     Route::post('ssl/ca/{certificate}/renew', [SslCaController::class, 'renew'])->name('ssl.ca.renew');
     Route::post('ssl/ca/renew-all', [SslCaController::class, 'renewAll'])->name('ssl.ca.renew-all');
+
+    Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('settings/{group}', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('settings/email/test', [SettingsController::class, 'testEmail'])->name('settings.test-email');
 });
