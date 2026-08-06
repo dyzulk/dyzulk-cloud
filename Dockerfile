@@ -1,7 +1,7 @@
 ################################################################################
-# Stage 1: Frontend Build (FrankenPHP PHP 8.5 + Node 24)
+# Stage 1: Frontend Build (PHP 8.5 Alpine + Node 24)
 ################################################################################
-FROM dunglas/frankenphp:php8.5-alpine AS frontend
+FROM php:8.5-cli-alpine AS frontend
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
