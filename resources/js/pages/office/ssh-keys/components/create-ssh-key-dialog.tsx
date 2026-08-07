@@ -16,6 +16,8 @@ import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { KeyRound, Sparkles, Copy, Check } from 'lucide-react';
 import { useClipboard } from '@/hooks/use-clipboard';
+import { index as sshKeysIndex } from '@/actions/App/Http/Controllers/Office/SshKeyController';
+import { getRelativeUrl } from '@/lib/utils';
 
 interface CreateSshKeyDialogProps {
     open: boolean;
@@ -51,7 +53,7 @@ export function CreateSshKeyDialog({
     const handleGenerate = () => {
         setIsGenerating(true);
         router.get(
-            '/office/ssh-keys',
+            getRelativeUrl(sshKeysIndex.url()),
             { generate_type: algorithm },
             {
                 preserveState: true,
