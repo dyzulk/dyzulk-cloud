@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
                     'resources/css/office.css',
                     'resources/js/office.tsx',
                 ],
+                ssr: 'resources/js/ssr.tsx',
                 refresh: true,
                 fonts: [
                     bunny('Instrument Sans', {
@@ -25,7 +26,11 @@ export default defineConfig(({ mode }) => {
                     }),
                 ],
             }),
-            inertia(),
+            inertia({
+                ssr: {
+                    entry: 'resources/js/ssr.tsx',
+                },
+            }),
             react({
                 babel: {
                     plugins: ['babel-plugin-react-compiler'],
@@ -45,6 +50,9 @@ export default defineConfig(({ mode }) => {
             watch: {
                 usePolling: true,
             },
+        },
+        ssr: {
+            noExternal: ['next-themes'],
         },
     };
 });
