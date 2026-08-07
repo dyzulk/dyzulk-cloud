@@ -30,4 +30,6 @@ yarn-error.log
 /architectur-docs
 /laravel
 /testing
+/test-results
+/playwright-report
 docker/traefik/dynamic/
