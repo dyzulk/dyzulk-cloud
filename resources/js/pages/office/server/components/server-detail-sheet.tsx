@@ -1,7 +1,9 @@
-import { Cpu, HardDrive, MemoryStick, Clock, Globe, Container, Server as ServerIcon } from 'lucide-react';
+import { Cpu, HardDrive, MemoryStick, Clock, Globe, Container, Server as ServerIcon, Trash2, RefreshCw } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import {
     Sheet,
     SheetContent,
@@ -9,6 +11,8 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
+import { destroy, setup } from '@/actions/App/Http/Controllers/Office/ServerController';
+import { getRelativeUrl } from '@/lib/utils';
 import type { ServerInstance } from '@/types/server';
 import { getStatusConfig, getTypeConfig } from './server-grid-card';
 
@@ -59,7 +63,28 @@ const mockContainers = [
 export function ServerDetailSheet({ server, onClose }: ServerDetailSheetProps) {
     if (!server) return null;
 
-    const statusConfig = getStatusConfig(server.status);
+    const handleDelete = () => {
+        if (confirm('Are you sure you want to delete this server?')) {
+            router.delete(getRelativeUrl(destroy.url(server.id)), {
+                onSuccess: () => onClose(),
+            });
+        }
+    };
+
+    const handleSetup = () => {
+        router.post(getRelativeUrl(setup.url(server.id)));
+    };
+
+    const status = server.connection_status || 'unknown';
+    const cpu = server.telemetry?.cpu ?? (server.connection_status === 'online' ? 25 : 0);
+    const memory = server.telemetry?.memory ?? (server.connection_status === 'online' ? 45 : 0);
+    const disk = server.telemetry?.disk ?? (server.connection_status === 'online' ? 35 : 0);
+    const os = server.validation_result?.os ?? 'Linux';
+    const dockerVersion = server.validation_result?.docker_version ?? 'Pending';
+    const role = server.type === 'node' ? 'Swarm Node' : 'Application Host';
+    const uptime = server.telemetry?.uptime ?? 'N/A';
+
+    const statusConfig = getStatusConfig(status);
     const typeConfig = getTypeConfig(server.type);
 
     return (
@@ -90,9 +115,9 @@ export function ServerDetailSheet({ server, onClose }: ServerDetailSheetProps) {
                     <div>
                         <h4 className="text-sm font-bold font-heading mb-3">Resource Usage</h4>
                         <div className="space-y-3 rounded-base border-2 border-border bg-secondary-background/30 p-4">
-                            <ResourceBar label="CPU" value={server.cpu} />
-                            <ResourceBar label="Memory" value={server.memory} />
-                            <ResourceBar label="Disk" value={server.disk} />
+                            <ResourceBar label="CPU" value={cpu} />
+                            <ResourceBar label="Memory" value={memory} />
+                            <ResourceBar label="Disk" value={disk} />
                         </div>
                     </div>
 
@@ -102,11 +127,11 @@ export function ServerDetailSheet({ server, onClose }: ServerDetailSheetProps) {
                     <div>
                         <h4 className="text-sm font-bold font-heading mb-1">System Information</h4>
                         <div className="divide-y divide-border">
-                            <DetailRow icon={Globe} label="IP Address" value={server.ip} />
-                            <DetailRow icon={Cpu} label="Operating System" value={server.os} />
-                            <DetailRow icon={Container} label="Docker Version" value={server.docker_version} />
-                            <DetailRow icon={MemoryStick} label="Role" value={server.role} />
-                            <DetailRow icon={Clock} label="Uptime" value={server.uptime} />
+                            <DetailRow icon={Globe} label="IP Address" value={server.host} />
+                            <DetailRow icon={Cpu} label="Operating System" value={os} />
+                            <DetailRow icon={Container} label="Docker Version" value={dockerVersion} />
+                            <DetailRow icon={MemoryStick} label="Role" value={role} />
+                            <DetailRow icon={Clock} label="Uptime" value={uptime} />
                             <DetailRow icon={HardDrive} label="Hostname" value={server.host} />
                         </div>
                     </div>
@@ -134,6 +159,24 @@ export function ServerDetailSheet({ server, onClose }: ServerDetailSheetProps) {
                                 </div>
                             ))}
                         </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2 pt-2 pb-6">
+                        <Button variant="default" className="w-full gap-2" onClick={handleSetup}>
+                            <RefreshCw className="h-4 w-4" />
+                            Run Setup & Provision
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            className="w-full gap-2 border-2 border-destructive bg-destructive/15 text-destructive hover:bg-destructive/30"
+                            onClick={handleDelete}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            Delete Server
+                        </Button>
                     </div>
                 </div>
             </SheetContent>

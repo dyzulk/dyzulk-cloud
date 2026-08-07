@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
 import {
     Server,
     Cpu,
@@ -8,6 +9,7 @@ import {
     List,
     Search,
     MonitorDot,
+    Plus,
 } from 'lucide-react';
 import { index as serverIndex } from '@/actions/App/Http/Controllers/Office/ServerController';
 import Heading from '@/components/heading';
@@ -18,9 +20,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getRelativeUrl } from '@/lib/utils';
 import type { ServerInstance, ServerType } from '@/types/server';
+import type { SshKeyInstance } from '@/types/office';
 import { ServerDetailSheet } from './components/server-detail-sheet';
 import { ServerGridCard } from './components/server-grid-card';
 import { ServerListTable } from './components/server-list-table';
+import { AddServerDialog } from './components/add-server-dialog';
 import { useServers } from './hooks/use-servers';
 
 const typeFilters: { value: 'all' | ServerType; label: string }[] = [
@@ -56,7 +60,14 @@ function KpiCard({
     );
 }
 
-export default function ServerIndex({ servers }: { servers: ServerInstance[] }) {
+export default function ServerIndex({
+    servers,
+    sshKeys,
+}: {
+    servers: ServerInstance[];
+    sshKeys: SshKeyInstance[];
+}) {
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const {
         searchQuery,
         setSearchQuery,
@@ -82,7 +93,11 @@ export default function ServerIndex({ servers }: { servers: ServerInstance[] }) 
                         title="Server Management"
                         description="Monitor and manage server hardware, system resources, and status."
                     />
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        <Button className="gap-2" onClick={() => setIsAddDialogOpen(true)}>
+                            <Plus className="h-4 w-4" />
+                            Add Server
+                        </Button>
                         <div className="flex items-center rounded-base border-2 border-border bg-background">
                             <Button
                                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -219,6 +234,14 @@ export default function ServerIndex({ servers }: { servers: ServerInstance[] }) 
 
             {/* Server Detail Sheet */}
             <ServerDetailSheet server={selectedServer} onClose={closeDetail} />
+
+            {/* Add Server Dialog */}
+            <AddServerDialog
+                open={isAddDialogOpen}
+                onOpenChange={setIsAddDialogOpen}
+                sshKeys={sshKeys}
+                servers={servers}
+            />
         </>
     );
 }
