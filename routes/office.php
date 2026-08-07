@@ -61,6 +61,9 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class.':planning'])->name(
 Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])->name('office.')->group(function () {
     Route::get('docker', [DockerController::class, 'index'])->name('docker.index');
     Route::get('server', [ServerController::class, 'index'])->name('server.index');
+    Route::post('server', [ServerController::class, 'store'])->name('server.store');
+    Route::delete('server/{server}', [ServerController::class, 'destroy'])->name('server.destroy');
+    Route::post('server/{server}/setup', [ServerController::class, 'setup'])->name('server.setup');
     Route::resource('ssh-keys', SshKeyController::class)->only(['index', 'store', 'destroy']);
     Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('ssl/ca', [SslCaController::class, 'index'])->name('ssl.ca.index');
