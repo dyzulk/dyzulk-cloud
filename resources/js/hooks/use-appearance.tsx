@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 export type ResolvedAppearance = 'light' | 'dark';
 export type Appearance = ResolvedAppearance | 'system';
@@ -88,13 +88,22 @@ export function initializeTheme(): void {
 }
 
 export function useAppearance(): UseAppearanceReturn {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const appearance: Appearance = useSyncExternalStore(
         subscribe,
         () => currentAppearance,
         () => 'system',
     );
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(appearance)
+    // Defer using the actual appearance state until mounted on the client to avoid SSR hydration mismatch
+    const activeAppearance = mounted ? appearance : 'system';
+
+    const resolvedAppearance: ResolvedAppearance = isDarkMode(activeAppearance)
         ? 'dark'
         : 'light';
 
@@ -111,5 +120,9 @@ export function useAppearance(): UseAppearanceReturn {
         notify();
     };
 
-    return { appearance, resolvedAppearance, updateAppearance } as const;
+    return {
+        appearance: activeAppearance,
+        resolvedAppearance,
+        updateAppearance,
+    } as const;
 }
