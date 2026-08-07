@@ -33,3 +33,4 @@ yarn-error.log
 /test-results
 /playwright-report
 docker/traefik/dynamic/
+/.pnpm-store
