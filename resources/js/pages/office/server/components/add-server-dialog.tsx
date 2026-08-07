@@ -13,6 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxList,
+    ComboboxItem,
+    ComboboxEmpty,
+} from '@/components/ui/combobox';
 import { store as storeServer } from '@/actions/App/Http/Controllers/Office/ServerController';
 import { getRelativeUrl } from '@/lib/utils';
 import type { SshKeyInstance } from '@/types/office';
@@ -154,7 +162,6 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                                 <NativeSelectOption value="deploy">Deploy Host</NativeSelectOption>
                                 <NativeSelectOption value="node">Swarm Cluster Node</NativeSelectOption>
                                 <NativeSelectOption value="build">Build Runner</NativeSelectOption>
-                                <NativeSelectOption value="local">Local Engine</NativeSelectOption>
                             </NativeSelect>
                             {errors.type && (
                                 <p className="text-xs text-destructive">{errors.type}</p>
@@ -165,19 +172,22 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                     {/* SSH Key Selector */}
                     <div className="grid gap-2">
                         <Label htmlFor="ssh_key_id">SSH Credential / Key</Label>
-                        <NativeSelect
-                            id="ssh_key_id"
-                            className="w-full"
+                        <Combobox
                             value={data.ssh_key_id}
-                            onChange={(e) => setData('ssh_key_id', e.target.value)}
-                            required
+                            onValueChange={(val) => setData('ssh_key_id', val || '')}
                         >
-                            {sshKeys.map((key) => (
-                                <NativeSelectOption key={key.id} value={String(key.id)}>
-                                    {key.name} ({key.type})
-                                </NativeSelectOption>
-                            ))}
-                        </NativeSelect>
+                            <ComboboxInput placeholder="Search SSH Key..." className="w-full" />
+                            <ComboboxContent>
+                                <ComboboxList>
+                                    {sshKeys.map((key) => (
+                                        <ComboboxItem key={key.id} value={String(key.id)}>
+                                            {key.name} ({key.type})
+                                        </ComboboxItem>
+                                    ))}
+                                    <ComboboxEmpty>No SSH Key found</ComboboxEmpty>
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
                         {errors.ssh_key_id && (
                             <p className="text-xs text-destructive">{errors.ssh_key_id}</p>
                         )}
@@ -187,21 +197,25 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                     {data.type === 'node' && swarmManagers.length > 0 && (
                         <div className="grid gap-2">
                             <Label htmlFor="swarm_manager_server_id">Swarm Manager (Parent)</Label>
-                            <NativeSelect
-                                id="swarm_manager_server_id"
-                                className="w-full"
+                            <Combobox
                                 value={data.swarm_manager_server_id}
-                                onChange={(e) => setData('swarm_manager_server_id', e.target.value)}
+                                onValueChange={(val) => setData('swarm_manager_server_id', val || '')}
                             >
-                                <NativeSelectOption value="">
-                                    Initialize as Swarm Manager (Leader)
-                                </NativeSelectOption>
-                                {swarmManagers.map((mgr) => (
-                                    <NativeSelectOption key={mgr.id} value={String(mgr.id)}>
-                                        {mgr.name} ({mgr.host})
-                                    </NativeSelectOption>
-                                ))}
-                            </NativeSelect>
+                                <ComboboxInput placeholder="Search Swarm Manager..." className="w-full" />
+                                <ComboboxContent>
+                                    <ComboboxList>
+                                        <ComboboxItem value="">
+                                            Initialize as Swarm Manager (Leader)
+                                        </ComboboxItem>
+                                        {swarmManagers.map((mgr) => (
+                                            <ComboboxItem key={mgr.id} value={String(mgr.id)}>
+                                                {mgr.name} ({mgr.host})
+                                            </ComboboxItem>
+                                        ))}
+                                        <ComboboxEmpty>No Swarm Manager found</ComboboxEmpty>
+                                    </ComboboxList>
+                                </ComboboxContent>
+                            </Combobox>
                             {errors.swarm_manager_server_id && (
                                 <p className="text-xs text-destructive">
                                     {errors.swarm_manager_server_id}
