@@ -10,6 +10,7 @@ use App\Http\Controllers\Office\PlanningController;
 use App\Http\Controllers\Office\ReportsController;
 use App\Http\Controllers\Office\ServerController;
 use App\Http\Controllers\Office\SettingsController;
+use App\Http\Controllers\Office\SshKeyController;
 use App\Http\Controllers\Office\SslCaController;
 use App\Http\Middleware\EnsureOfficeAccess;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,7 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class.':planning'])->name(
 Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])->name('office.')->group(function () {
     Route::get('docker', [DockerController::class, 'index'])->name('docker.index');
     Route::get('server', [ServerController::class, 'index'])->name('server.index');
+    Route::resource('ssh-keys', SshKeyController::class)->only(['index', 'store', 'destroy']);
     Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('ssl/ca', [SslCaController::class, 'index'])->name('ssl.ca.index');
     Route::post('ssl/ca/setup', [SslCaController::class, 'setupCa'])->name('ssl.ca.setup');

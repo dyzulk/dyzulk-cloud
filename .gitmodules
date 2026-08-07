@@ -1,0 +1,6 @@
+[submodule "references/coolify"]
+	path = references/coolify
+	url = https://github.com/coollabsio/coolify.git
+[submodule "references/dokploy"]
+	path = references/dokploy
+	url = https://github.com/dokploy/dokploy.git

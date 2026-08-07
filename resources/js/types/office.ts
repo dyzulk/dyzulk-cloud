@@ -22,3 +22,16 @@ export type Employee = {
 export type OfficeAuth = {
     employee: Employee;
 };
+
+export type SshKeyInstance = {
+    id: number;
+    uuid: string;
+    team_id: number | null;
+    name: string;
+    description: string | null;
+    type: 'rsa' | 'ecdsa' | 'ed25519';
+    public_key: string;
+    fingerprint: string;
+    created_at: string;
+    updated_at: string;
+};

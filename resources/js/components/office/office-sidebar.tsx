@@ -9,6 +9,7 @@ import {
     Megaphone,
     Server,
     Settings,
+    Key,
 } from 'lucide-react';
 import { index as officeDockerIndex } from '@/actions/App/Http/Controllers/Office/DockerController';
 import { index as officeFinanceIndex } from '@/actions/App/Http/Controllers/Office/FinanceController';
@@ -16,6 +17,7 @@ import { index as officeMarketingIndex } from '@/actions/App/Http/Controllers/Of
 import { index as officePlanningIndex } from '@/actions/App/Http/Controllers/Office/PlanningController';
 import { index as officeReportsIndex } from '@/actions/App/Http/Controllers/Office/ReportsController';
 import { index as officeServerIndex } from '@/actions/App/Http/Controllers/Office/ServerController';
+import { index as officeSshKeysIndex } from '@/actions/App/Http/Controllers/Office/SshKeyController';
 import { index as officeSettingsIndex } from '@/actions/App/Http/Controllers/Office/SettingsController';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
@@ -47,6 +49,7 @@ export function OfficeSidebar() {
     const caAdminUrl = getRelativeUrl(officeSslCaIndex.url());
     const dockerUrl = getRelativeUrl(officeDockerIndex.url());
     const serverUrl = getRelativeUrl(officeServerIndex.url());
+    const sshKeysUrl = getRelativeUrl(officeSshKeysIndex.url());
     const settingsUrl = getRelativeUrl(officeSettingsIndex.url());
 
     const mainNavItems: NavItem[] = [
@@ -103,6 +106,11 @@ export function OfficeSidebar() {
             title: 'Server',
             href: serverUrl,
             icon: Server,
+        });
+        departmentNavItems.push({
+            title: 'SSH Keys',
+            href: sshKeysUrl,
+            icon: Key,
         });
         departmentNavItems.push({
             title: 'Reports',
