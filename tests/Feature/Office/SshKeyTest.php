@@ -120,56 +120,38 @@ test('administrator can delete a global ssh key', function () {
     $this->assertDatabaseMissing('ssh_keys', ['id' => $key->id]);
 });
 
-test('administrator can generate an ed25519 ssh key pair automatically', function () {
+test('administrator can request a generated ed25519 key pair via index page', function () {
     $employee = Employee::factory()->create([
         'role' => 'administrator',
     ]);
 
     $response = $this->actingAs($employee, 'office')
-        ->post(route('office.ssh-keys.store'), [
-            'name' => 'Auto ED25519 Key',
-            'description' => 'Test ed25519 generation',
-            'creation_method' => 'generate',
-            'type' => 'ed25519',
-        ]);
+        ->get(route('office.ssh-keys.index', ['generate_type' => 'ed25519']));
 
-    $response->assertRedirect();
+    $response->assertStatus(200);
 
-    $this->assertDatabaseHas('ssh_keys', [
-        'name' => 'Auto ED25519 Key',
-        'type' => 'ed25519',
-    ]);
+    // Assert the Inertia page has 'generatedKey' prop
+    $generatedKey = $response->original->getData()['page']['props']['generatedKey'];
 
-    $key = SshKey::where('name', 'Auto ED25519 Key')->first();
-    expect($key)->not->toBeNull();
-    expect($key->private_key)->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
-    expect($key->public_key)->toStartWith('ssh-ed25519 ');
-    expect($key->fingerprint)->toStartWith('SHA256:');
+    expect($generatedKey)->not->toBeNull();
+    expect($generatedKey['private_key'])->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
+    expect($generatedKey['public_key'])->toStartWith('ssh-ed25519 ');
 });
 
-test('administrator can generate an rsa ssh key pair automatically', function () {
+test('administrator can request a generated rsa key pair via index page', function () {
     $employee = Employee::factory()->create([
         'role' => 'administrator',
     ]);
 
     $response = $this->actingAs($employee, 'office')
-        ->post(route('office.ssh-keys.store'), [
-            'name' => 'Auto RSA Key',
-            'description' => 'Test rsa generation',
-            'creation_method' => 'generate',
-            'type' => 'rsa',
-        ]);
+        ->get(route('office.ssh-keys.index', ['generate_type' => 'rsa']));
 
-    $response->assertRedirect();
+    $response->assertStatus(200);
 
-    $this->assertDatabaseHas('ssh_keys', [
-        'name' => 'Auto RSA Key',
-        'type' => 'rsa',
-    ]);
+    // Assert the Inertia page has 'generatedKey' prop
+    $generatedKey = $response->original->getData()['page']['props']['generatedKey'];
 
-    $key = SshKey::where('name', 'Auto RSA Key')->first();
-    expect($key)->not->toBeNull();
-    expect($key->private_key)->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
-    expect($key->public_key)->toStartWith('ssh-rsa ');
-    expect($key->fingerprint)->toStartWith('SHA256:');
+    expect($generatedKey)->not->toBeNull();
+    expect($generatedKey['private_key'])->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
+    expect($generatedKey['public_key'])->toStartWith('ssh-rsa ');
 });

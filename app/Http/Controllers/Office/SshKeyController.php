@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SshKey;
 use App\Rules\ValidSshPrivateKey;
 use App\Services\SshKeyService;
+use App\Support\SshKeyUtils;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,8 +31,21 @@ class SshKeyController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $generatedKey = null;
+        if ($request->has('generate_type')) {
+            $type = $request->input('generate_type');
+            if (in_array($type, ['rsa', 'ed25519'])) {
+                try {
+                    $generatedKey = SshKeyUtils::generateKeyPair($type);
+                } catch (\Exception $e) {
+                    // Fail silently or log error
+                }
+            }
+        }
+
         return Inertia::render('office/ssh-keys/index', [
             'sshKeys' => $keys,
+            'generatedKey' => $generatedKey,
         ]);
     }
 
@@ -40,25 +54,13 @@ class SshKeyController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $creationMethod = $request->input('creation_method', 'import');
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'private_key' => ['required', 'string', new ValidSshPrivateKey],
+        ]);
 
-        if ($creationMethod === 'generate') {
-            $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'description' => ['nullable', 'string', 'max:1000'],
-                'type' => ['required', 'string', 'in:rsa,ed25519'],
-            ]);
-
-            $this->sshKeyService->generateAndCreateKey($validated, null);
-        } else {
-            $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'description' => ['nullable', 'string', 'max:1000'],
-                'private_key' => ['required', 'string', new ValidSshPrivateKey],
-            ]);
-
-            $this->sshKeyService->createKey($validated, null);
-        }
+        $this->sshKeyService->createKey($validated, null);
 
         return back();
     }

@@ -16,8 +16,6 @@ export function useSshKeys(initialKeys: SshKeyInstance[]) {
         name: '',
         description: '',
         private_key: '',
-        creation_method: 'generate' as 'generate' | 'import',
-        type: 'ed25519' as 'rsa' | 'ed25519',
     });
 
     // Delete Key Form
