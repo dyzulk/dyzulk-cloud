@@ -35,7 +35,7 @@ Use this skill to understand the features, architectural patterns, and file layo
 ### 1. Deployment & CI/CD Pipelines
 How deployments are triggered, queued, built (via Dockerfile or Nixpacks), and tracked.
 - **Coolify**:
-  - *Location*: [app/Jobs/ApplicationDeploymentJob.php](../../../references/coolify/app/Jobs/ApplicationDeploymentJob.php), [app/Actions/Application/StartApplication.php](../../../references/coolify/app/Actions/Application/StartApplication.php)
+  - *Location*: [app/Jobs/ApplicationDeploymentJob.php](../../../references/coolify/app/Jobs/ApplicationDeploymentJob.php), [bootstrap/helpers/applications.php](../../../references/coolify/bootstrap/helpers/applications.php) (the `queue_application_deployment` helper)
   - *How it works*: Leverages Laravel's queue system to coordinate remote SSH commands. Runs Docker builds (or uses Nixpacks/buildpacks), streams logs, and updates application state.
 - **Dokploy**:
   - *Location*: [apps/dokploy/server/api/routers/application.ts](../../../references/dokploy/apps/dokploy/server/api/routers/application.ts), [apps/dokploy/server/api/routers/deployment.ts](../../../references/dokploy/apps/dokploy/server/api/routers/deployment.ts)
@@ -44,7 +44,7 @@ How deployments are triggered, queued, built (via Dockerfile or Nixpacks), and t
 ### 2. Server SSH Management & Setup
 How remote nodes are registered, connected via SSH, and provisioned with Docker.
 - **Coolify**:
-  - *Location*: [app/Actions/Server/InstallDocker.php](../../../references/coolify/app/Actions/Server/InstallDocker.php), [app/Actions/Server/ValidateAndInstall.php](../../../references/coolify/app/Actions/Server/ValidateAndInstall.php)
+  - *Location*: [app/Actions/Server/InstallDocker.php](../../../references/coolify/app/Actions/Server/InstallDocker.php), [app/Livewire/Server/ValidateAndInstall.php](../../../references/coolify/app/Livewire/Server/ValidateAndInstall.php), [app/Jobs/ValidateAndInstallServerJob.php](../../../references/coolify/app/Jobs/ValidateAndInstallServerJob.php)
   - *How it works*: Establishes SSH sessions using PHP's SSH capabilities (or phpseclib), checks system specs, configures Docker daemon, and returns validation logs.
 - **Dokploy**:
   - *Location*: [apps/dokploy/server/api/routers/server.ts](../../../references/dokploy/apps/dokploy/server/api/routers/server.ts), [apps/dokploy/server/api/routers/ssh-key.ts](../../../references/dokploy/apps/dokploy/server/api/routers/ssh-key.ts)
