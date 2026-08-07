@@ -7,9 +7,11 @@ import {
     FolderGit2,
     LayoutGrid,
     Megaphone,
+    Server,
     Settings,
 } from 'lucide-react';
 import { index as officeDockerIndex } from '@/actions/App/Http/Controllers/Office/DockerController';
+import { index as officeServerIndex } from '@/actions/App/Http/Controllers/Office/ServerController';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
 import { OfficeNavEmployee } from '@/components/office/office-nav-employee';
@@ -39,6 +41,7 @@ export function OfficeSidebar() {
     const reportsUrl = '/reports';
     const caAdminUrl = getRelativeUrl(officeSslCaIndex.url());
     const dockerUrl = getRelativeUrl(officeDockerIndex.url());
+    const serverUrl = getRelativeUrl(officeServerIndex.url());
     const settingsUrl = '/settings';
 
     const mainNavItems: NavItem[] = [
@@ -90,6 +93,11 @@ export function OfficeSidebar() {
             title: 'Docker',
             href: dockerUrl,
             icon: Container,
+        });
+        departmentNavItems.push({
+            title: 'Server',
+            href: serverUrl,
+            icon: Server,
         });
         departmentNavItems.push({
             title: 'Reports',
