@@ -93,4 +93,62 @@ class SshKeyUtils
             }
         }
     }
+
+    /**
+     * Generate a new SSH key pair (private and public keys).
+     *
+     * @param  string  $type  ('rsa' or 'ed25519')
+     * @return array{private_key: string, public_key: string}
+     *
+     * @throws Exception
+     */
+    public static function generateKeyPair(string $type): array
+    {
+        if (! in_array($type, ['rsa', 'ed25519'])) {
+            throw new Exception('Invalid SSH key type requested for generation.');
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'ssh_key_gen_');
+        if ($tempFile === false) {
+            throw new Exception('Failed to create temporary file for key generation.');
+        }
+
+        // Delete the file because ssh-keygen wants to create it
+        if (file_exists($tempFile)) {
+            unlink($tempFile);
+        }
+
+        try {
+            $command = ['ssh-keygen', '-t', $type, '-N', '', '-f', $tempFile, '-q'];
+            if ($type === 'rsa') {
+                $command[] = '-b';
+                $command[] = '4096';
+            }
+
+            $result = Process::run($command);
+
+            if (! $result->successful()) {
+                throw new Exception('Failed to generate key pair: '.$result->errorOutput());
+            }
+
+            $privateKey = file_get_contents($tempFile);
+            $publicKey = file_get_contents($tempFile.'.pub');
+
+            if ($privateKey === false || $publicKey === false) {
+                throw new Exception('Failed to read generated key files.');
+            }
+
+            return [
+                'private_key' => trim($privateKey),
+                'public_key' => trim($publicKey),
+            ];
+        } finally {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            if (file_exists($tempFile.'.pub')) {
+                unlink($tempFile.'.pub');
+            }
+        }
+    }
 }

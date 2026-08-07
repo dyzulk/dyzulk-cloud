@@ -30,6 +30,27 @@ class SshKeyService
     }
 
     /**
+     * Generate a new SSH key pair, then create and store it.
+     *
+     * @param  array{name: string, description: ?string, type: string}  $data
+     */
+    public function generateAndCreateKey(array $data, ?Team $team = null): SshKey
+    {
+        $keyPair = SshKeyUtils::generateKeyPair($data['type']);
+        $metadata = SshKeyUtils::getFingerprintAndType($keyPair['private_key']);
+
+        return SshKey::create([
+            'team_id' => $team?->id,
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'private_key' => $keyPair['private_key'],
+            'public_key' => $keyPair['public_key'],
+            'fingerprint' => $metadata['fingerprint'],
+            'type' => $metadata['type'],
+        ]);
+    }
+
+    /**
      * Delete an SSH key from the database.
      */
     public function deleteKey(SshKey $sshKey): bool

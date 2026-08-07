@@ -40,13 +40,25 @@ class SshKeyController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'private_key' => ['required', 'string', new ValidSshPrivateKey],
-        ]);
+        $creationMethod = $request->input('creation_method', 'import');
 
-        $this->sshKeyService->createKey($validated, null);
+        if ($creationMethod === 'generate') {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string', 'max:1000'],
+                'type' => ['required', 'string', 'in:rsa,ed25519'],
+            ]);
+
+            $this->sshKeyService->generateAndCreateKey($validated, null);
+        } else {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'description' => ['nullable', 'string', 'max:1000'],
+                'private_key' => ['required', 'string', new ValidSshPrivateKey],
+            ]);
+
+            $this->sshKeyService->createKey($validated, null);
+        }
 
         return back();
     }

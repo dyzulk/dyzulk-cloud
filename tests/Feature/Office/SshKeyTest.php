@@ -119,3 +119,57 @@ test('administrator can delete a global ssh key', function () {
     $response->assertRedirect();
     $this->assertDatabaseMissing('ssh_keys', ['id' => $key->id]);
 });
+
+test('administrator can generate an ed25519 ssh key pair automatically', function () {
+    $employee = Employee::factory()->create([
+        'role' => 'administrator',
+    ]);
+
+    $response = $this->actingAs($employee, 'office')
+        ->post(route('office.ssh-keys.store'), [
+            'name' => 'Auto ED25519 Key',
+            'description' => 'Test ed25519 generation',
+            'creation_method' => 'generate',
+            'type' => 'ed25519',
+        ]);
+
+    $response->assertRedirect();
+
+    $this->assertDatabaseHas('ssh_keys', [
+        'name' => 'Auto ED25519 Key',
+        'type' => 'ed25519',
+    ]);
+
+    $key = SshKey::where('name', 'Auto ED25519 Key')->first();
+    expect($key)->not->toBeNull();
+    expect($key->private_key)->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
+    expect($key->public_key)->toStartWith('ssh-ed25519 ');
+    expect($key->fingerprint)->toStartWith('SHA256:');
+});
+
+test('administrator can generate an rsa ssh key pair automatically', function () {
+    $employee = Employee::factory()->create([
+        'role' => 'administrator',
+    ]);
+
+    $response = $this->actingAs($employee, 'office')
+        ->post(route('office.ssh-keys.store'), [
+            'name' => 'Auto RSA Key',
+            'description' => 'Test rsa generation',
+            'creation_method' => 'generate',
+            'type' => 'rsa',
+        ]);
+
+    $response->assertRedirect();
+
+    $this->assertDatabaseHas('ssh_keys', [
+        'name' => 'Auto RSA Key',
+        'type' => 'rsa',
+    ]);
+
+    $key = SshKey::where('name', 'Auto RSA Key')->first();
+    expect($key)->not->toBeNull();
+    expect($key->private_key)->toStartWith('-----BEGIN OPENSSH PRIVATE KEY-----');
+    expect($key->public_key)->toStartWith('ssh-rsa ');
+    expect($key->fingerprint)->toStartWith('SHA256:');
+});
