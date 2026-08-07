@@ -4,6 +4,10 @@ use App\Http\Controllers\Office\Auth\LoginController;
 use App\Http\Controllers\Office\Auth\OnboardingController;
 use App\Http\Controllers\Office\DashboardController;
 use App\Http\Controllers\Office\DockerController;
+use App\Http\Controllers\Office\FinanceController;
+use App\Http\Controllers\Office\MarketingController;
+use App\Http\Controllers\Office\PlanningController;
+use App\Http\Controllers\Office\ReportsController;
 use App\Http\Controllers\Office\ServerController;
 use App\Http\Controllers\Office\SettingsController;
 use App\Http\Controllers\Office\SslCaController;
@@ -39,10 +43,24 @@ Route::middleware(['auth:office', EnsureOfficeAccess::class])->group(function ()
     Route::get('/', DashboardController::class)->name('office.dashboard');
 });
 
+// Department-specific routes (department members + administrators)
+Route::middleware(['auth:office', EnsureOfficeAccess::class.':finance'])->name('office.')->group(function () {
+    Route::get('finance', [FinanceController::class, 'index'])->name('finance.index');
+});
+
+Route::middleware(['auth:office', EnsureOfficeAccess::class.':marketing'])->name('office.')->group(function () {
+    Route::get('marketing', [MarketingController::class, 'index'])->name('marketing.index');
+});
+
+Route::middleware(['auth:office', EnsureOfficeAccess::class.':planning'])->name('office.')->group(function () {
+    Route::get('planning', [PlanningController::class, 'index'])->name('planning.index');
+});
+
 // Office Administrator Routes (Administrators only)
 Route::middleware(['auth:office', EnsureOfficeAccess::class.':,administrator'])->name('office.')->group(function () {
     Route::get('docker', [DockerController::class, 'index'])->name('docker.index');
     Route::get('server', [ServerController::class, 'index'])->name('server.index');
+    Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('ssl/ca', [SslCaController::class, 'index'])->name('ssl.ca.index');
     Route::post('ssl/ca/setup', [SslCaController::class, 'setupCa'])->name('ssl.ca.setup');
     Route::post('ssl/ca/{certificate}/renew', [SslCaController::class, 'renew'])->name('ssl.ca.renew');
