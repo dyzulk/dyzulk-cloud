@@ -1,6 +1,8 @@
 import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
 import ReactDOMServer from 'react-dom/server';
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
@@ -48,6 +50,12 @@ createServer((page) =>
                 }
             }
         },
-        setup: ({ App, props }) => <App {...props} />,
+        setup: ({ App, props }) => (
+            <TooltipProvider delayDuration={0}>
+                <App {...props} />
+                <Toaster />
+            </TooltipProvider>
+        ),
     }),
 );
+

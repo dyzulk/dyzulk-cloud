@@ -103,8 +103,8 @@ export function useAppearance(): UseAppearanceReturn {
     // Defer using the actual appearance state until mounted on the client to avoid SSR hydration mismatch
     const activeAppearance = mounted ? appearance : 'system';
 
-    const resolvedAppearance: ResolvedAppearance = isDarkMode(activeAppearance)
-        ? 'dark'
+    const resolvedAppearance: ResolvedAppearance = mounted
+        ? (isDarkMode(activeAppearance) ? 'dark' : 'light')
         : 'light';
 
     const updateAppearance = (mode: Appearance): void => {
