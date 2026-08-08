@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -12,7 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+} from '@/components/ui/select';
 import {
     Combobox,
     ComboboxInput,
@@ -45,10 +51,35 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
         swarm_manager_server_id: '',
     });
 
+    const [sshKeySearch, setSshKeySearch] = useState('');
+    const [swarmManagerSearch, setSwarmManagerSearch] = useState('');
+
+    // Filter potential swarm managers (only nodes that are already managers/independent)
+    const swarmManagers = servers.filter(
+        (s) => s.type === 'node' && s.swarm_manager_server_id === null
+    );
+
+    // Sync input values when dialog opens or selection changes
+    useEffect(() => {
+        if (open) {
+            const selectedKey = sshKeys.find((k) => String(k.id) === data.ssh_key_id);
+            setSshKeySearch(selectedKey ? `${selectedKey.name} (${selectedKey.type})` : '');
+
+            const selectedMgr = swarmManagers.find(
+                (m) => String(m.id) === data.swarm_manager_server_id
+            );
+            setSwarmManagerSearch(
+                selectedMgr ? `${selectedMgr.name} (${selectedMgr.host})` : ''
+            );
+        }
+    }, [open, data.ssh_key_id, data.swarm_manager_server_id, sshKeys, servers]);
+
     // Reset form when dialog closes/opens
     useEffect(() => {
         if (!open) {
             reset();
+            setSshKeySearch('');
+            setSwarmManagerSearch('');
         } else if (sshKeys.length > 0 && !data.ssh_key_id) {
             setData('ssh_key_id', String(sshKeys[0].id));
         }
@@ -64,14 +95,45 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
         });
     };
 
-    // Filter potential swarm managers (only nodes that are already managers/independent)
-    const swarmManagers = servers.filter(
-        (s) => s.type === 'node' && s.swarm_manager_server_id === null
-    );
+    // Filtered lists
+    const filteredKeys = sshKeys.filter((key) => {
+        const searchLower = sshKeySearch.toLowerCase();
+        const selectedKey = sshKeys.find((k) => String(k.id) === data.ssh_key_id);
+        const selectedLabel = selectedKey ? `${selectedKey.name} (${selectedKey.type})` : '';
+        
+        if (sshKeySearch === selectedLabel) {
+            return true;
+        }
+
+        return (
+            key.name.toLowerCase().includes(searchLower) ||
+            key.type.toLowerCase().includes(searchLower)
+        );
+    });
+
+    const filteredManagers = swarmManagers.filter((mgr) => {
+        const searchLower = swarmManagerSearch.toLowerCase();
+        const selectedMgr = swarmManagers.find(
+            (m) => String(m.id) === data.swarm_manager_server_id
+        );
+        const selectedLabel = selectedMgr ? `${selectedMgr.name} (${selectedMgr.host})` : '';
+
+        if (swarmManagerSearch === selectedLabel) {
+            return true;
+        }
+
+        return (
+            mgr.name.toLowerCase().includes(searchLower) ||
+            mgr.host.toLowerCase().includes(searchLower)
+        );
+    });
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent
+                className="sm:max-w-[500px]"
+                onInteractOutside={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle className="font-heading">Add New Server</DialogTitle>
                     <DialogDescription>
@@ -153,16 +215,19 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="type">Server Type</Label>
-                            <NativeSelect
-                                id="type"
-                                className="w-full"
+                            <Select
                                 value={data.type}
-                                onChange={(e) => setData('type', e.target.value as any)}
+                                onValueChange={(val) => setData('type', val as any)}
                             >
-                                <NativeSelectOption value="deploy">Deploy Host</NativeSelectOption>
-                                <NativeSelectOption value="node">Swarm Cluster Node</NativeSelectOption>
-                                <NativeSelectOption value="build">Build Runner</NativeSelectOption>
-                            </NativeSelect>
+                                <SelectTrigger id="type" className="w-full bg-secondary-background text-foreground border-2 border-border shadow-shadow">
+                                    <SelectValue placeholder="Select type..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="deploy">Deploy Host</SelectItem>
+                                    <SelectItem value="node">Swarm Cluster Node</SelectItem>
+                                    <SelectItem value="build">Build Runner</SelectItem>
+                                </SelectContent>
+                            </Select>
                             {errors.type && (
                                 <p className="text-xs text-destructive">{errors.type}</p>
                             )}
@@ -175,16 +240,22 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                         <Combobox
                             value={data.ssh_key_id}
                             onValueChange={(val) => setData('ssh_key_id', val || '')}
+                            inputValue={sshKeySearch}
+                            onInputValueChange={setSshKeySearch}
                         >
                             <ComboboxInput placeholder="Search SSH Key..." className="w-full" />
                             <ComboboxContent>
-                                <ComboboxList>
-                                    {sshKeys.map((key) => (
-                                        <ComboboxItem key={key.id} value={String(key.id)}>
+                                <ComboboxList className="p-1.5 max-h-60 overflow-y-auto">
+                                    {filteredKeys.map((key) => (
+                                        <ComboboxItem key={key.id} value={String(key.id)} className="py-2.5">
                                             {key.name} ({key.type})
                                         </ComboboxItem>
                                     ))}
-                                    <ComboboxEmpty>No SSH Key found</ComboboxEmpty>
+                                    {filteredKeys.length === 0 && (
+                                        <div className="py-3 text-center text-sm text-muted-foreground">
+                                            No SSH Key found
+                                        </div>
+                                    )}
                                 </ComboboxList>
                             </ComboboxContent>
                         </Combobox>
@@ -200,19 +271,25 @@ export function AddServerDialog({ open, onOpenChange, sshKeys, servers }: AddSer
                             <Combobox
                                 value={data.swarm_manager_server_id}
                                 onValueChange={(val) => setData('swarm_manager_server_id', val || '')}
+                                inputValue={swarmManagerSearch}
+                                onInputValueChange={setSwarmManagerSearch}
                             >
                                 <ComboboxInput placeholder="Search Swarm Manager..." className="w-full" />
                                 <ComboboxContent>
-                                    <ComboboxList>
-                                        <ComboboxItem value="">
+                                    <ComboboxList className="p-1.5 max-h-60 overflow-y-auto">
+                                        <ComboboxItem value="" className="py-2.5">
                                             Initialize as Swarm Manager (Leader)
                                         </ComboboxItem>
-                                        {swarmManagers.map((mgr) => (
-                                            <ComboboxItem key={mgr.id} value={String(mgr.id)}>
+                                        {filteredManagers.map((mgr) => (
+                                            <ComboboxItem key={mgr.id} value={String(mgr.id)} className="py-2.5">
                                                 {mgr.name} ({mgr.host})
                                             </ComboboxItem>
                                         ))}
-                                        <ComboboxEmpty>No Swarm Manager found</ComboboxEmpty>
+                                        {filteredManagers.length === 0 && (
+                                            <div className="py-3 text-center text-sm text-muted-foreground">
+                                                No Swarm Manager found
+                                            </div>
+                                        )}
                                     </ComboboxList>
                                 </ComboboxContent>
                             </Combobox>

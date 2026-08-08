@@ -522,3 +522,5 @@ Server-side patterns (Inertia::render, props, middleware) are covered in inertia
 - Forgetting to check if `<Form>` component is available in your Inertia version
 - Using `router.cancel()` instead of `router.cancelAll()` (v3 breaking change)
 - Using `router.on('invalid', ...)` or `router.on('exception', ...)` instead of the renamed `httpException` and `networkError` events
+- Using native HTML select elements (e.g., NativeSelect) for dropdowns. Avoid native dropdowns. Always use custom Radix-based `<Select>` components or custom `<Combobox>` with search for searchable options.
+

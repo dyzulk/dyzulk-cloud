@@ -270,3 +270,4 @@ Changing `--main` automatically propagates to all components using `bg-main`, `t
 - Not applying `border-2 border-border` to interactive elements (the thick border is essential to the aesthetic)
 - Using `hover:shadow-lg` instead of `hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none` for the interactive press effect
 - Mixing standard shadcn/ui components with neobrutalism components without updating the CSS variables (they use different token names)
+- Using native HTML select elements (e.g., NativeSelect). Never use native HTML `<select>` elements in the UI. Always use custom Radix-based `<Select>` components or custom `<Combobox>` with search for searchable options.
